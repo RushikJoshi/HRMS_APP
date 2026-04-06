@@ -34,29 +34,43 @@ class AttendanceCalendar extends StatefulWidget {
 }
 
 class _AttendanceCalendarState extends State<AttendanceCalendar> {
+  static const Color _presentColor = Color(0xFF32DBE6);
+  static const Color _absentColor = Color(0xFFE53935);
+  static const Color _leaveColor = Color(0xFFF4C542);
+  static const Color _halfDayColor = Color(0xFFFFA726);
+  static const Color _holidayColor = Color(0xFF7E57C2);
+  static const Color _weekOffColor = Color(0xFF9AA5B1);
+  static const Color _accentColor = Color(0xFF32DBE6);
+
   bool _isDayInList(DateTime day, List<DateTime>? dayList) {
     if (dayList == null) return false;
     return dayList.any((d) => isSameDay(d, day));
   }
 
   Widget _buildDayCell(BuildContext context, DateTime day) {
-    final now = DateTime.now();
-    final isPast = day.isBefore(DateTime(now.year, now.month, now.day));
+    final selected = widget.selectedDays.any((d) => isSameDay(d, day));
+    final isToday = isSameDay(day, DateTime.now());
 
     Widget buildCell({
-      required Color color,
-      Color textColor = Colors.white,
+      Color? color,
+      required Color textColor,
+      Color borderColor = Colors.transparent,
+      bool filled = true,
     }) =>
         Container(
           margin: EdgeInsets.all(1.w),
           decoration: BoxDecoration(
-            color: color,
+            color: filled ? color : Colors.white,
             shape: BoxShape.circle,
+            border: Border.all(
+              color: selected ? _accentColor : borderColor,
+              width: selected ? 1.6 : 1,
+            ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 2,
-                offset: const Offset(1, 1),
+                color: Colors.black.withOpacity(filled ? 0.08 : 0.04),
+                blurRadius: 4,
+                offset: const Offset(0, 1),
               ),
             ],
           ),
@@ -66,53 +80,59 @@ class _AttendanceCalendarState extends State<AttendanceCalendar> {
             style: TextStyle(
               color: textColor,
               fontWeight: FontWeight.w500,
-              fontSize: 11.sp,
+              fontSize: 10.5.sp,
             ),
           ),
         );
 
     // Priority-based styling
     if (_isDayInList(day, widget.absentDays)) {
-      return buildCell(color: Colors.red.shade400);
+      return buildCell(color: _absentColor, textColor: Colors.white);
     }
     if (_isDayInList(day, widget.leaveDays)) {
-      return buildCell(color: Colors.purple.shade400);
+      return buildCell(color: _leaveColor, textColor: Colors.black87);
     }
     if (_isDayInList(day, widget.halfDays)) {
-      return buildCell(color: Colors.orange.shade400);
+      return buildCell(color: _halfDayColor, textColor: Colors.white);
     }
     if (_isDayInList(day, widget.holidayDays)) {
-      return buildCell(color: Colors.cyan.shade400);
+      return buildCell(color: _holidayColor, textColor: Colors.white);
     }
     if (_isDayInList(day, widget.presentDays)) {
-      return buildCell(color: Colors.green.shade400);
+      return buildCell(color: _presentColor, textColor: Colors.white);
     }
     if (_isDayInList(day, widget.weekOffDays)) {
-      return buildCell(color: Colors.grey.shade400);
+      return buildCell(color: _weekOffColor, textColor: Colors.white);
     }
 
     // Weekends
     if (day.weekday == DateTime.saturday || day.weekday == DateTime.sunday) {
       return buildCell(
-        color: Colors.grey.shade200,
+        color: null,
         textColor: Colors.black87,
+        borderColor: Colors.grey.shade300,
+        filled: false,
       );
     }
 
-    // Past days
-    if (isPast) {
+    if (isToday) {
       return buildCell(
-        color: const Color(0xFFCECECE),
-        textColor: Colors.black54,
+        color: const Color(0xFFEAFBFD),
+        textColor: _accentColor,
+        borderColor: _accentColor.withOpacity(0.6),
+        filled: true,
       );
     }
 
-    // Future days
     return Container(
       margin: EdgeInsets.all(1.w),
       decoration: BoxDecoration(
+        color: Colors.white,
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(
+          color: selected ? _accentColor : Colors.grey.shade300,
+          width: selected ? 1.6 : 1,
+        ),
       ),
       alignment: Alignment.center,
       child: Text(
@@ -188,9 +208,6 @@ class _AttendanceCalendarState extends State<AttendanceCalendar> {
               selectedBuilder: (context, day, focusedDay) =>
                   _buildDayCell(context, day),
               todayBuilder: (context, day, focusedDay) {
-                if (widget.selectedDays.any((d) => isSameDay(d, day))) {
-                  return null;
-                }
                 return _buildDayCell(context, day);
               },
             ),
@@ -245,12 +262,12 @@ class _AttendanceCalendarState extends State<AttendanceCalendar> {
       runSpacing: 2.w,
       alignment: WrapAlignment.center,
       children: [
-        _buildLegendItem('Present', Colors.green.shade400),
-        _buildLegendItem('Absent', Colors.red.shade400),
-        _buildLegendItem('Leave', Colors.purple.shade400),
-        _buildLegendItem('Half Day', Colors.orange.shade400),
-        _buildLegendItem('Holiday', Colors.cyan.shade400),
-        _buildLegendItem('Week Off', Colors.grey.shade400),
+        _buildLegendItem('Present', _presentColor),
+        _buildLegendItem('Absent', _absentColor),
+        _buildLegendItem('Leave', _leaveColor),
+        _buildLegendItem('Half Day', _halfDayColor),
+        _buildLegendItem('Holiday', _holidayColor),
+        _buildLegendItem('Week Off', _weekOffColor),
       ],
     );
   }

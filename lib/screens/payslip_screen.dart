@@ -116,49 +116,6 @@ class _PayslipScreenContent extends StatelessWidget {
     );
   }
 
-  // Removed static salary summary — payslip screen shows only API data
-
-  Widget _buildDownloadButton(PayslipState state) {
-    return Builder(
-      builder: (context) {
-        return ElevatedButton.icon(
-          onPressed: () {
-            final selected = state.payslips.isNotEmpty
-                ? state.payslips.first
-                : null;
-            if (selected != null && selected.downloadUrl != null) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Downloading ${selected.month}...'),
-                  backgroundColor: AppColors.greenDark,
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-              // Implement actual download logic as needed
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('No payslip available to download'),
-                  backgroundColor: AppColors.error,
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            }
-          },
-          icon: const Icon(AppIcons.downloadRounded),
-          label: Text(
-            'Download Payslip',
-            style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.bold),
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.secondary,
-            padding: EdgeInsets.symmetric(vertical: 4.w),
-          ),
-        );
-      },
-    );
-  }
-
   Widget _buildPayslipList(BuildContext context, PayslipState state) {
     return Column(
       children: [

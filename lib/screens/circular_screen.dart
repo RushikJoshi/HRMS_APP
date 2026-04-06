@@ -55,13 +55,14 @@ class _CircularScreenContent extends StatelessWidget {
   void _showFilterBottomSheet(BuildContext context) {
     final bloc = context.read<CircularBloc>();
     final categories = ['All', 'Holiday', 'Meeting', 'Policy', 'Event'];
-    
+
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (bottomSheetContext) { // Use a distinct context name for clarity
+      builder: (bottomSheetContext) {
+        // Use a distinct context name for clarity
         return BlocProvider.value(
           value: bloc,
           child: BlocBuilder<CircularBloc, CircularState>(
@@ -74,7 +75,10 @@ class _CircularScreenContent extends StatelessWidget {
                   children: [
                     Text(
                       'Filter by Category',
-                      style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     ...categories.map((category) {
@@ -84,12 +88,20 @@ class _CircularScreenContent extends StatelessWidget {
                           value: category,
                           groupValue: state.selectedCategory ?? 'All',
                           onChanged: (value) {
-                            bloc.add(CircularCategoryFilterChanged(value == 'All' ? null : value));
+                            bloc.add(
+                              CircularCategoryFilterChanged(
+                                value == 'All' ? null : value,
+                              ),
+                            );
                             Navigator.pop(context);
                           },
                         ),
                         onTap: () {
-                          bloc.add(CircularCategoryFilterChanged(category == 'All' ? null : category));
+                          bloc.add(
+                            CircularCategoryFilterChanged(
+                              category == 'All' ? null : category,
+                            ),
+                          );
                           Navigator.pop(context);
                         },
                       );
@@ -120,41 +132,45 @@ class _CircularScreenContent extends StatelessWidget {
           ),
           BlocBuilder<CircularBloc, CircularState>(
             builder: (context, state) {
-              final unreadCount = state.allCirculars.where((c) => !c.isRead).length;
+              final unreadCount = state.allCirculars
+                  .where((c) => !c.isRead)
+                  .length;
               return Stack(
-            children: [
-              IconButton(
-                icon: const Icon(AppIcons.notifications),
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('$unreadCount unread circulars available'),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                },
-              ),
+                children: [
+                  IconButton(
+                    icon: const Icon(AppIcons.notifications),
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            '$unreadCount unread circulars available',
+                          ),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    },
+                  ),
                   if (unreadCount > 0)
-                Positioned(
-                  right: 8,
-                  top: 8,
-                  child: Container(
-                    padding: EdgeInsets.all(1.w),
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Text(
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        padding: EdgeInsets.all(1.w),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Text(
                           '$unreadCount',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 8.sp,
-                        fontWeight: FontWeight.bold,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 8.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-            ],
+                ],
               );
             },
           ),
@@ -163,13 +179,11 @@ class _CircularScreenContent extends StatelessWidget {
       body: BlocBuilder<CircularBloc, CircularState>(
         builder: (context, state) {
           final bloc = context.read<CircularBloc>();
-          
+
           return Column(
             children: [
               _buildSearchBar(context, bloc, state),
-              Expanded(
-                child: _buildBodyContent(context, bloc, state),
-              ),
+              Expanded(child: _buildBodyContent(context, bloc, state)),
             ],
           );
         },
@@ -177,7 +191,11 @@ class _CircularScreenContent extends StatelessWidget {
     );
   }
 
-  Widget _buildBodyContent(BuildContext context, CircularBloc bloc, CircularState state) {
+  Widget _buildBodyContent(
+    BuildContext context,
+    CircularBloc bloc,
+    CircularState state,
+  ) {
     if (state.status == CircularLoadStatus.loading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -212,11 +230,15 @@ class _CircularScreenContent extends StatelessWidget {
 
     final grouped = state.groupedCirculars;
     final orderedGroups = ['Today', 'This Week', 'Previous Month', 'Older'];
-    
+
     return _buildCircularList(context, bloc, grouped, orderedGroups);
   }
 
-  Widget _buildSearchBar(BuildContext context, CircularBloc bloc, CircularState state) {
+  Widget _buildSearchBar(
+    BuildContext context,
+    CircularBloc bloc,
+    CircularState state,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       color: Colors.white,
@@ -257,14 +279,10 @@ class _CircularScreenContent extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              AppIcons.inbox,
-              size: 50.sp,
-              color: Colors.grey.shade400,
-            ),
+            Icon(AppIcons.inbox, size: 50.sp, color: Colors.grey.shade400),
             const SizedBox(height: 16),
             Text(
-               'No circulars found',
+              'No circulars found',
               style: TextStyle(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.bold,
@@ -273,11 +291,8 @@ class _CircularScreenContent extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-               'Try adjusting your search or filter',
-              style: TextStyle(
-                fontSize: 11.sp,
-                color: Colors.grey.shade500,
-              ),
+              'Try adjusting your search or filter',
+              style: TextStyle(fontSize: 11.sp, color: Colors.grey.shade500),
             ),
           ],
         ),
@@ -285,8 +300,15 @@ class _CircularScreenContent extends StatelessWidget {
     );
   }
 
-  Widget _buildCircularList(BuildContext context, CircularBloc bloc, Map<String, List<Circular>> grouped, List<String> orderedGroups) {
-    final groupKeys = orderedGroups.where((key) => grouped.containsKey(key)).toList();
+  Widget _buildCircularList(
+    BuildContext context,
+    CircularBloc bloc,
+    Map<String, List<Circular>> grouped,
+    List<String> orderedGroups,
+  ) {
+    final groupKeys = orderedGroups
+        .where((key) => grouped.containsKey(key))
+        .toList();
 
     return ListView.builder(
       padding: EdgeInsets.all(4.w),
@@ -300,7 +322,9 @@ class _CircularScreenContent extends StatelessWidget {
           children: [
             _buildGroupHeader(context, groupKey, circulars.length),
             const SizedBox(height: 12),
-            ...circulars.map((circular) => _buildCircularCard(context, bloc, circular)),
+            ...circulars.map(
+              (circular) => _buildCircularCard(context, bloc, circular),
+            ),
             if (index < grouped.length - 1) const SizedBox(height: 24),
           ],
         );
@@ -329,7 +353,7 @@ class _CircularScreenContent extends StatelessWidget {
         Icon(icon, size: 16.sp, color: Theme.of(context).colorScheme.primary),
         const SizedBox(width: 8),
         Text(
-            title,
+          title,
           style: TextStyle(
             fontSize: 12.sp,
             fontWeight: FontWeight.bold,
@@ -340,7 +364,9 @@ class _CircularScreenContent extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+            color: Theme.of(
+              context,
+            ).colorScheme.primaryContainer.withOpacity(0.3),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
@@ -356,7 +382,11 @@ class _CircularScreenContent extends StatelessWidget {
     );
   }
 
-  Widget _buildCircularCard(BuildContext context, CircularBloc bloc, Circular circular) {
+  Widget _buildCircularCard(
+    BuildContext context,
+    CircularBloc bloc,
+    Circular circular,
+  ) {
     return InkWell(
       onTap: () {
         bloc.add(CircularMarkAsRead(circular.id));
@@ -375,7 +405,9 @@ class _CircularScreenContent extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: circular.isRead ? Colors.grey.shade200 : Colors.blue.shade200,
+            color: circular.isRead
+                ? Colors.grey.shade200
+                : Colors.blue.shade200,
             width: circular.isRead ? 1 : 1.5,
           ),
           boxShadow: [
@@ -399,32 +431,42 @@ class _CircularScreenContent extends StatelessWidget {
                         circular.title,
                         style: TextStyle(
                           fontSize: 12.sp,
-                          fontWeight: circular.isRead ? FontWeight.w500 : FontWeight.bold,
+                          fontWeight: circular.isRead
+                              ? FontWeight.w500
+                              : FontWeight.bold,
                           color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 4),
-            Row(
-              children: [
-                          Icon(AppIcons.personOutlined, size: 11.sp, color: Colors.grey.shade600),
+                      Row(
+                        children: [
+                          Icon(
+                            AppIcons.personOutlined,
+                            size: 11.sp,
+                            color: Colors.grey.shade600,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             circular.uploadedBy,
                             style: TextStyle(
                               fontSize: 9.sp,
-                  color: Colors.grey.shade600,
-                ),
+                              color: Colors.grey.shade600,
+                            ),
                           ),
                           const SizedBox(width: 12),
-                          Icon(AppIcons.calendarToday, size: 11.sp, color: Colors.grey.shade600),
-                const SizedBox(width: 4),
-                Text(
-                  DateFormat('dd MMM yyyy').format(circular.date),
-                  style: TextStyle(
-                    fontSize: 9.sp,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
+                          Icon(
+                            AppIcons.calendarToday,
+                            size: 11.sp,
+                            color: Colors.grey.shade600,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            DateFormat('dd MMM yyyy').format(circular.date),
+                            style: TextStyle(
+                              fontSize: 9.sp,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -432,7 +474,10 @@ class _CircularScreenContent extends StatelessWidget {
                 ),
                 if (circular.status != null)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: circular.status!.color.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
@@ -460,14 +505,11 @@ class _CircularScreenContent extends StatelessWidget {
             ),
             if (circular.description.isNotEmpty) ...[
               const SizedBox(height: 12),
-            Text(
+              Text(
                 circular.description,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                  fontSize: 11.sp,
-                  color: Colors.grey.shade700,
-                ),
+                style: TextStyle(fontSize: 11.sp, color: Colors.grey.shade700),
               ),
             ],
             if (circular.attachments.isNotEmpty) ...[
@@ -511,22 +553,27 @@ class CircularDetailScreen extends StatelessWidget {
           children: [
             Text(
               circular.title,
-              style: TextStyle(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             Row(
               children: [
-                Icon(AppIcons.personOutlined, size: 12.sp, color: Colors.grey.shade600),
+                Icon(
+                  AppIcons.personOutlined,
+                  size: 12.sp,
+                  color: Colors.grey.shade600,
+                ),
                 const SizedBox(width: 4),
                 Text(
                   circular.uploadedBy,
                   style: TextStyle(color: Colors.grey.shade600),
                 ),
                 const SizedBox(width: 16),
-                Icon(AppIcons.calendarToday, size: 12.sp, color: Colors.grey.shade600),
+                Icon(
+                  AppIcons.calendarToday,
+                  size: 12.sp,
+                  color: Colors.grey.shade600,
+                ),
                 const SizedBox(width: 4),
                 Text(
                   DateFormat('dd MMM yyyy').format(circular.date),

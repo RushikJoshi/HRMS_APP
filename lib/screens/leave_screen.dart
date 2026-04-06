@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hrms_ess/utils/responsive_utility.dart';
 import 'package:sizer/sizer.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -18,65 +19,37 @@ import '../widgets/custom_text.dart';
 import '../widgets/custom_text_field_new.dart';
 import '../widgets/border_container_wraper.dart';
 import '../widgets/app_inner_shadow.dart';
+import '../widgets/leave_detail_bottom_sheet.dart';
+import '../widgets/leave_expandable_card.dart';
 
 // ─────────────────────────────────────────────
 //  CUSTOM WIDGET: Leave Balance Type Card
 // ─────────────────────────────────────────────
-class LeaveBalanceCard extends StatefulWidget {
+class LeaveBalanceCard extends StatelessWidget {
   final LeaveBalance balance;
 
   const LeaveBalanceCard({super.key, required this.balance});
 
-  @override
-  State<LeaveBalanceCard> createState() => _LeaveBalanceCardState();
-}
-
-class _LeaveBalanceCardState extends State<LeaveBalanceCard>
-    with SingleTickerProviderStateMixin {
-  bool _expanded = false;
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 250),
-      vsync: this,
-    );
-    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _toggle() {
-    setState(() => _expanded = !_expanded);
-    _expanded ? _controller.forward() : _controller.reverse();
-  }
-
   Color get _cardColor {
-    final t = (widget.balance.leaveType ?? '').toLowerCase();
+    final t = (balance.leaveType ?? '').toLowerCase();
     if (t.contains('casual')) return const Color(0xFF1E88E5);
     if (t.contains('sick')) return const Color(0xFF26C6DA);
     if (t.contains('birthday')) return const Color(0xFF8E6BBF);
     if (t.contains('comp') || t.contains('off')) return const Color(0xFF26A69A);
-    if (t.contains('earned') || t.contains('annual')) return const Color(0xFF43A047);
-    if (t.contains('maternity') || t.contains('paternity')) return const Color(0xFFEC407A);
+    if (t.contains('earned') || t.contains('annual'))
+      return const Color(0xFF43A047);
+    if (t.contains('maternity') || t.contains('paternity'))
+      return const Color(0xFFEC407A);
     return AppColors.primary;
   }
 
   @override
   Widget build(BuildContext context) {
-    final leaveType = widget.balance.leaveType ?? 'Leave';
-    final total = (widget.balance.entitled ?? 0).toInt();
-    final used = (widget.balance.taken ?? 0).toDouble();
-    final remaining = (widget.balance.balance ?? 0).toDouble();
+    final leaveType = balance.leaveType ?? 'Leave';
+    final total = (balance.entitled ?? 0).toInt();
+    final used = (balance.taken ?? 0).toDouble();
+    final remaining = (balance.balance ?? 0).toDouble();
 
-    // Calculate used if not directly provided
     double actualUsed = used;
     if (actualUsed == 0 && total > 0) {
       actualUsed = total - remaining;
@@ -86,134 +59,90 @@ class _LeaveBalanceCardState extends State<LeaveBalanceCard>
     final color = _cardColor;
     final lightColor = color.withOpacity(0.10);
 
-    return GestureDetector(
-      onTap: _toggle,
-      child: Container(
-        margin: EdgeInsets.only(bottom: 3.w),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade100, width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: color.withOpacity(0.08),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            // ── Header ──
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 3.5.w),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [color, color.withOpacity(0.80)],
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
+    return Container(
+      margin: EdgeInsets.only(bottom: 3.w),
+      child: LeaveExpandableCard(
+        title: '$leaveType ( Total $total )',
+        subTitle: actualUsed > 0
+            ? 'Used ${actualUsed.toInt()} • Remaining ${remaining.toInt()}'
+            : 'Remaining ${remaining.toInt()}',
+        headerColor: color,
+        borderColor: color.withOpacity(0.18),
+        headerHeight: 0.078 * Responsive.getHeight(context),
+        collapsedChild: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.8.w),
+          child: Row(
+            children: [
+              Container(
+                width: 10.w,
+                height: 10.w,
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(16),
-                  topRight: const Radius.circular(16),
-                  bottomLeft: Radius.circular(_expanded ? 0 : 16),
-                  bottomRight: Radius.circular(_expanded ? 0 : 16),
+                child: Icon(_leaveIcon(leaveType), color: color, size: 5.w),
+              ),
+              SizedBox(width: 3.w),
+              Expanded(
+                child: CustomText(
+                  '$leaveType balance details',
+                  isKey: false,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textSecondary,
                 ),
               ),
-              child: Row(
+            ],
+          ),
+        ),
+        expandedChild: Container(
+          padding: EdgeInsets.all(2.w),
+          decoration: BoxDecoration(
+            color: lightColor,
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(12),
+              bottomRight: Radius.circular(12),
+            ),
+          ),
+          child: Column(
+            children: [
+              Row(
                 children: [
-                  // Leave type icon
-                  Container(
-                    width: 10.w,
-                    height: 10.w,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.20),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(
-                      _leaveIcon(leaveType),
-                      color: Colors.white,
-                      size: 5.w,
-                    ),
+                  _statCell(
+                    'Used Leaves',
+                    actualUsed.toInt().toString(),
+                    color,
+                    Icons.exit_to_app_rounded,
                   ),
                   SizedBox(width: 3.w),
-                  Expanded(
-                    child: CustomText(
-                      '$leaveType ( Total $total )',
-                      isKey: false,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                  RotationTransition(
-                    turns: Tween(begin: 0.0, end: 0.5).animate(_animation),
-                    child: Icon(
-                      Icons.keyboard_arrow_down_rounded,
-                      color: Colors.white,
-                      size: 6.w,
-                    ),
+                  _statCell(
+                    'Remaining Leaves',
+                    remaining.toInt().toString(),
+                    color,
+                    Icons.event_available_rounded,
                   ),
                 ],
               ),
-            ),
-
-            // ── Expandable Body ──
-            SizeTransition(
-              sizeFactor: _animation,
-              child: Container(
-                padding: EdgeInsets.all(4.w),
-                decoration: BoxDecoration(
-                  color: lightColor,
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(16),
-                    bottomRight: Radius.circular(16),
+              SizedBox(height: 2.5.w),
+              Row(
+                children: [
+                  _statCell(
+                    'Leave Payout',
+                    '0',
+                    Colors.grey.shade600,
+                    Icons.payments_outlined,
                   ),
-                ),
-                child: Column(
-                  children: [
-                    // Row 1
-                    Row(
-                      children: [
-                        _statCell(
-                          'Used Leaves',
-                          actualUsed.toInt().toString(),
-                          color,
-                          Icons.exit_to_app_rounded,
-                        ),
-                        SizedBox(width: 3.w),
-                        _statCell(
-                          'Remaining Leaves',
-                          remaining.toInt().toString(),
-                          color,
-                          Icons.event_available_rounded,
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 2.5.w),
-                    // Row 2
-                    Row(
-                      children: [
-                        _statCell(
-                          'Leave Payout',
-                          '0',
-                          Colors.grey.shade600,
-                          Icons.payments_outlined,
-                        ),
-                        SizedBox(width: 3.w),
-                        _statCell(
-                          'Carry Forward',
-                          '0',
-                          Colors.grey.shade600,
-                          Icons.forward_rounded,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                  SizedBox(width: 3.w),
+                  _statCell(
+                    'Carry Forward',
+                    '0',
+                    Colors.grey.shade600,
+                    Icons.forward_rounded,
+                  ),
+                ],
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -265,8 +194,10 @@ class _LeaveBalanceCardState extends State<LeaveBalanceCard>
     final t = type.toLowerCase();
     if (t.contains('sick')) return Icons.medical_services_outlined;
     if (t.contains('birthday')) return Icons.cake_outlined;
-    if (t.contains('comp') || t.contains('off')) return Icons.swap_horiz_rounded;
-    if (t.contains('earned') || t.contains('annual')) return Icons.beach_access_outlined;
+    if (t.contains('comp') || t.contains('off'))
+      return Icons.swap_horiz_rounded;
+    if (t.contains('earned') || t.contains('annual'))
+      return Icons.beach_access_outlined;
     if (t.contains('maternity')) return Icons.pregnant_woman_outlined;
     if (t.contains('paternity')) return Icons.family_restroom_outlined;
     return Icons.event_note_outlined;
@@ -295,7 +226,8 @@ class LeaveHistoryCard extends StatelessWidget {
     if (t.contains('short')) return const Color(0xFF26C6DA);
     if (t.contains('casual')) return const Color(0xFF42A5F5);
     if (t.contains('sick')) return const Color(0xFFEF5350);
-    if (t.contains('earned') || t.contains('annual')) return const Color(0xFF66BB6A);
+    if (t.contains('earned') || t.contains('annual'))
+      return const Color(0xFF66BB6A);
     if (t.contains('optional')) return const Color(0xFFFFA726);
     if (t.contains('auto')) return const Color(0xFFFFCA28);
     if (t.contains('comp') || t.contains('off')) return const Color(0xFF26A69A);
@@ -315,70 +247,89 @@ class LeaveHistoryCard extends StatelessWidget {
     final color = _headerColor;
     final isPending = request.status == LeaveStatus.pending;
 
-    return Container(
+    return BorderContainerWraper(
       margin: EdgeInsets.only(bottom: 3.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(0.10),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
+      padding:EdgeInsets.all(0),
+      // decoration: BoxDecoration(
+      //   color: Colors.white,
+      //   borderRadius: BorderRadius.circular(14),
+      //   boxShadow: [
+      //     BoxShadow(
+      //       color: color.withOpacity(0.10),
+      //       blurRadius: 10,
+      //       offset: const Offset(0, 3),
+      //     ),
+      //   ],
+      // ),
       child: Column(
         children: [
           // ── Colored Date Header ──
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 3.w),
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(14),
-                topRight: Radius.circular(14),
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.calendar_today_rounded, color: Colors.white, size: 4.w),
-                SizedBox(width: 2.w),
-                CustomText(
-                  DateFormat('EEE, dd MMM yyyy').format(request.fromDate),
-                  isKey: false,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
+          AppInnerShadow(
+            top: true,
+            borderRadius: 0,
+            bottom: true,
+            blur: 3,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.w),
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(8),
+                  topRight: Radius.circular(8),
                 ),
-                const Spacer(),
-                // Edit & Delete icons (only for pending)
-                if (isPending) ...[
-                  GestureDetector(
-                    onTap: onEdit,
-                    child: Container(
-                      padding: EdgeInsets.all(1.5.w),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.20),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Icon(Icons.edit_outlined, color: Colors.white, size: 4.w),
-                    ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.calendar_today_rounded,
+                    color: Colors.white,
+                    size: 4.w,
                   ),
                   SizedBox(width: 2.w),
-                  GestureDetector(
-                    onTap: onDelete,
-                    child: Container(
-                      padding: EdgeInsets.all(1.5.w),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.20),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Icon(Icons.delete_outline_rounded, color: Colors.white, size: 4.w),
-                    ),
+                  CustomText(
+                    DateFormat('EEE, dd MMM yyyy').format(request.fromDate),
+                    isKey: false,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
                   ),
+                  const Spacer(),
+                  // Edit & Delete icons (only for pending)
+                  if (isPending) ...[
+                    GestureDetector(
+                      onTap: onEdit,
+                      child: Container(
+                        padding: EdgeInsets.all(1.5.w),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.20),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Icon(
+                          Icons.edit_outlined,
+                          color: Colors.white,
+                          size: 4.w,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 2.w),
+                    GestureDetector(
+                      onTap: onDelete,
+                      child: Container(
+                        padding: EdgeInsets.all(1.5.w),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.20),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Icon(
+                          Icons.delete_outline_rounded,
+                          color: Colors.white,
+                          size: 4.w,
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
 
@@ -392,7 +343,10 @@ class LeaveHistoryCard extends StatelessWidget {
                   children: [
                     // Leave type badge
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.w),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 3.w,
+                        vertical: 1.w,
+                      ),
                       decoration: BoxDecoration(
                         color: color.withOpacity(0.12),
                         borderRadius: BorderRadius.circular(20),
@@ -429,7 +383,11 @@ class LeaveHistoryCard extends StatelessWidget {
                   SizedBox(height: 1.5.w),
                   Row(
                     children: [
-                      Icon(Icons.info_outline_rounded, size: 3.5.w, color: Colors.grey.shade400),
+                      Icon(
+                        Icons.info_outline_rounded,
+                        size: 3.5.w,
+                        color: Colors.grey.shade400,
+                      ),
                       SizedBox(width: 1.5.w),
                       Expanded(
                         child: CustomText(
@@ -449,7 +407,10 @@ class LeaveHistoryCard extends StatelessWidget {
                   children: [
                     // Status badge
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.2.w),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 3.w,
+                        vertical: 1.2.w,
+                      ),
                       decoration: BoxDecoration(
                         color: request.status.color.withOpacity(0.12),
                         borderRadius: BorderRadius.circular(20),
@@ -481,9 +442,15 @@ class LeaveHistoryCard extends StatelessWidget {
                     GestureDetector(
                       onTap: onViewDetails,
                       child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 3.5.w, vertical: 1.5.w),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 3.5.w,
+                          vertical: 1.5.w,
+                        ),
                         decoration: BoxDecoration(
-                          border: Border.all(color: AppColors.primary, width: 1),
+                          border: Border.all(
+                            color: AppColors.primary,
+                            width: 1,
+                          ),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: CustomText(
@@ -555,7 +522,11 @@ class MonthNavigator extends StatelessWidget {
                 color: AppColors.primary.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(Icons.chevron_left_rounded, color: AppColors.primary, size: 5.w),
+              child: Icon(
+                Icons.chevron_left_rounded,
+                color: AppColors.primary,
+                size: 5.w,
+              ),
             ),
           ),
           SizedBox(width: 3.w),
@@ -575,7 +546,11 @@ class MonthNavigator extends StatelessWidget {
                 color: AppColors.primary.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(Icons.chevron_right_rounded, color: AppColors.primary, size: 5.w),
+              child: Icon(
+                Icons.chevron_right_rounded,
+                color: AppColors.primary,
+                size: 5.w,
+              ),
             ),
           ),
         ],
@@ -625,7 +600,7 @@ class LeaveSubTabBar extends StatelessWidget {
                             color: Colors.black.withOpacity(0.06),
                             blurRadius: 6,
                             offset: const Offset(0, 2),
-                          )
+                          ),
                         ]
                       : [],
                 ),
@@ -634,17 +609,25 @@ class LeaveSubTabBar extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        i == 0 ? Icons.account_balance_wallet_outlined : Icons.people_alt_outlined,
+                        i == 0
+                            ? Icons.account_balance_wallet_outlined
+                            : Icons.people_alt_outlined,
                         size: 3.5.w,
-                        color: isSelected ? AppColors.primary : Colors.grey.shade500,
+                        color: isSelected
+                            ? AppColors.primary
+                            : Colors.grey.shade500,
                       ),
                       SizedBox(width: 1.5.w),
                       CustomText(
                         tabs[i],
                         isKey: false,
                         fontSize: 10,
-                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                        color: isSelected ? AppColors.primary : Colors.grey.shade500,
+                        fontWeight: isSelected
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                        color: isSelected
+                            ? AppColors.primary
+                            : Colors.grey.shade500,
                       ),
                     ],
                   ),
@@ -868,8 +851,7 @@ class _LeaveScreenContentState extends State<_LeaveScreenContent>
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            ApplyLeaveScreen(profileData: widget.profileData),
+        builder: (context) => ApplyLeaveScreen(profileData: widget.profileData),
       ),
     ).then((result) async {
       if (result == true) {
@@ -880,7 +862,11 @@ class _LeaveScreenContentState extends State<_LeaveScreenContent>
     });
   }
 
-  void _navigateToEditLeave(BuildContext context, LeaveBloc bloc, LeaveRequest request) {
+  void _navigateToEditLeave(
+    BuildContext context,
+    LeaveBloc bloc,
+    LeaveRequest request,
+  ) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -896,6 +882,94 @@ class _LeaveScreenContentState extends State<_LeaveScreenContent>
         bloc.add(const LeaveLoadBalances());
       }
     });
+  }
+
+  void _showLeaveDetailsBottomSheet(
+    BuildContext context,
+    LeaveRequest request,
+  ) {
+    final color = _historyCardColor(request);
+    final requestDate = DateFormat(
+      'dd MMM yyyy',
+    ).format(request.appliedDate ?? request.fromDate);
+    final approvedDate = request.approvalDate != null
+        ? DateFormat('dd MMM yyyy').format(request.approvalDate!)
+        : '';
+    final dayView = request.isHalfDay
+        ? 'Half Day'
+        : request.totalDays == 1
+        ? 'Full Day'
+        : '${request.totalDays} Days';
+
+    final attachments =
+        request.attachmentUrl != null &&
+            request.attachmentUrl!.trim().isNotEmpty
+        ? <String>[request.attachmentUrl!.trim()]
+        : <String>[];
+
+    showModalBottomSheet<void>(
+      context: context,
+      useRootNavigator: true,
+      isDismissible: true,
+      enableDrag: true,
+      isScrollControlled: false,
+      backgroundColor: Colors.transparent,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => LeaveDetailBottomSheet(
+        leaveDateView:
+            '${DateFormat('dd MMM').format(request.fromDate)} - ${DateFormat('dd MMM yyyy').format(request.toDate)}',
+        requestDate: requestDate,
+        leaveDayView: dayView,
+        approvedByName: request.appliedBy ?? '',
+        leaveRequestedDate: requestDate,
+        approvedDate: approvedDate,
+        leaveType: request.type.label,
+        leaveDuration: '${request.totalDays} day(s)',
+        reason: request.reason,
+        altPhone: '',
+        taskDependency: request.locationType,
+        dependencyHandle: '',
+        attachments: attachments,
+        status: request.status.label.toUpperCase(),
+        detailColor: color,
+        autoLeave: request.type.label.toLowerCase().contains('auto'),
+        paidUnpaid: _payType(request.type),
+        isMultiLevelApproval: false,
+        approvalUsers: const [],
+      ),
+    );
+  }
+
+  Color _historyCardColor(LeaveRequest request) {
+    final t = request.type.label.toLowerCase();
+    if (t.contains('short')) return const Color(0xFF26C6DA);
+    if (t.contains('casual')) return const Color(0xFF42A5F5);
+    if (t.contains('sick')) return const Color(0xFFEF5350);
+    if (t.contains('earned') || t.contains('annual'))
+      return const Color(0xFF66BB6A);
+    if (t.contains('optional')) return const Color(0xFFFFA726);
+    if (t.contains('auto')) return const Color(0xFFFFCA28);
+    if (t.contains('comp') || t.contains('off')) return const Color(0xFF26A69A);
+    if (t.contains('birthday')) return const Color(0xFF8E6BBF);
+    return AppColors.primary;
+  }
+
+  String _payType(LeaveType type) {
+    switch (type) {
+      case LeaveType.casual:
+      case LeaveType.sick:
+      case LeaveType.earned:
+      case LeaveType.annual:
+      case LeaveType.maternity:
+      case LeaveType.paternity:
+        return 'Paid Leave';
+      case LeaveType.eol:
+        return 'Unpaid Leave';
+      default:
+        return 'Paid Leave';
+    }
   }
 
   Future<void> _showActionDialog(
@@ -932,8 +1006,10 @@ class _LeaveScreenContentState extends State<_LeaveScreenContent>
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 3.w, vertical: 2.w),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 3.w,
+                  vertical: 2.w,
+                ),
               ),
             ),
           ],
@@ -962,9 +1038,13 @@ class _LeaveScreenContentState extends State<_LeaveScreenContent>
       final remark = remarkController.text.trim();
       final bloc = context.read<LeaveBloc>();
       if (isApprove) {
-        bloc.add(LeaveApproveRequest(request.id, remark.isEmpty ? 'Approved' : remark));
+        bloc.add(
+          LeaveApproveRequest(request.id, remark.isEmpty ? 'Approved' : remark),
+        );
       } else {
-        bloc.add(LeaveRejectRequest(request.id, remark.isEmpty ? 'Rejected' : remark));
+        bloc.add(
+          LeaveRejectRequest(request.id, remark.isEmpty ? 'Rejected' : remark),
+        );
       }
     }
   }
@@ -982,7 +1062,9 @@ class _LeaveScreenContentState extends State<_LeaveScreenContent>
       builder: (ctx) => StatefulBuilder(
         builder: (context, setState) {
           return AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
             title: const CustomText(
               'Override Leave (HR)',
               isKey: false,
@@ -1100,7 +1182,8 @@ class _LeaveScreenContentState extends State<_LeaveScreenContent>
                 onPressed: () {
                   if (employeeIdController.text.isEmpty ||
                       fromDate == null ||
-                      toDate == null) return;
+                      toDate == null)
+                    return;
                   final req = OverrideLeaveRequest(
                     employeeId: employeeIdController.text,
                     leaveType: leaveType.label.toUpperCase(),
@@ -1154,10 +1237,8 @@ class _LeaveScreenContentState extends State<_LeaveScreenContent>
               // Tab 2: Leave History
               _buildHistoryTab(context, state),
               // Tab 3: Team Requests (if manager/HR)
-              if (_isManager)
-                _buildTeamTab(context, state, isTeam: true),
-              if (_isHR)
-                _buildAllLeavesTab(context, state),
+              if (_isManager) _buildTeamTab(context, state, isTeam: true),
+              if (_isHR) _buildAllLeavesTab(context, state),
             ],
           );
         },
@@ -1181,43 +1262,15 @@ class _LeaveScreenContentState extends State<_LeaveScreenContent>
     return AppBar(
       backgroundColor: AppColors.primary,
       elevation: 0,
-      centerTitle: true,
       iconTheme: const IconThemeData(color: Colors.white),
       title: const CustomText(
-        'Leave',
+        'Leave Management',
         isKey: false,
         fontSize: 18,
         fontWeight: FontWeight.w700,
         color: Colors.white,
       ),
-      actions: [
-        Padding(
-          padding: EdgeInsets.only(right: 4.w),
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.w),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.20),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.filter_list_rounded, color: Colors.white, size: 4.w),
-                SizedBox(width: 1.w),
-                CustomText(
-                  'All Leaves',
-                  isKey: false,
-                  fontSize: 11,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-                SizedBox(width: 1.w),
-                Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white, size: 4.w),
-              ],
-            ),
-          ),
-        ),
-      ],
+
       bottom: PreferredSize(
         preferredSize: Size.fromHeight(13.w),
         child: Container(
@@ -1229,10 +1282,7 @@ class _LeaveScreenContentState extends State<_LeaveScreenContent>
             indicatorColor: Colors.white,
             indicatorWeight: 3,
             indicatorSize: TabBarIndicatorSize.tab,
-            labelStyle: TextStyle(
-              fontSize: 11.sp,
-              fontWeight: FontWeight.w700,
-            ),
+            labelStyle: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w700),
             unselectedLabelStyle: TextStyle(
               fontSize: 11.sp,
               fontWeight: FontWeight.w500,
@@ -1248,12 +1298,14 @@ class _LeaveScreenContentState extends State<_LeaveScreenContent>
   // ─────────────────────── TAB 1: LEAVE BALANCE ───────────────────────
   Widget _buildBalanceTab(BuildContext context, LeaveState state) {
     // Show server error state
-    if (state.errorMessage != null && state.leaveBalances.isEmpty && !state.isLoading) {
+    if (state.errorMessage != null &&
+        state.leaveBalances.isEmpty &&
+        !state.isLoading) {
       return _buildErrorState(
         context: context,
-        message: 'Could not load leave balances.\nPlease check your connection and try again.',
-        onRetry: () =>
-            context.read<LeaveBloc>().add(const LeaveLoadBalances()),
+        message:
+            'Could not load leave balances.\nPlease check your connection and try again.',
+        onRetry: () => context.read<LeaveBloc>().add(const LeaveLoadBalances()),
       );
     }
 
@@ -1265,7 +1317,8 @@ class _LeaveScreenContentState extends State<_LeaveScreenContent>
       return _buildEmptyState(
         icon: Icons.account_balance_wallet_outlined,
         title: 'No Leave Policy Assigned',
-        subtitle: 'You don\'t have a leave policy assigned yet.\nPlease contact your HR department.',
+        subtitle:
+            'You don\'t have a leave policy assigned yet.\nPlease contact your HR department.',
         color: Colors.orange,
       );
     }
@@ -1278,7 +1331,7 @@ class _LeaveScreenContentState extends State<_LeaveScreenContent>
         physics: const AlwaysScrollableScrollPhysics(
           parent: BouncingScrollPhysics(),
         ),
-        padding: EdgeInsets.all(4.w),
+        padding: EdgeInsets.all(2.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1295,8 +1348,11 @@ class _LeaveScreenContentState extends State<_LeaveScreenContent>
                     color: AppColors.primary.withOpacity(0.10),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(Icons.account_balance_wallet_outlined,
-                      color: AppColors.primary, size: 4.5.w),
+                  child: Icon(
+                    Icons.account_balance_wallet_outlined,
+                    color: AppColors.primary,
+                    size: 4.5.w,
+                  ),
                 ),
                 SizedBox(width: 2.w),
                 CustomText(
@@ -1331,8 +1387,8 @@ class _LeaveScreenContentState extends State<_LeaveScreenContent>
       children: [
         // ── Header bar with month nav + sub-tabs ──
         Container(
-          color: Colors.white,
-          padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 3.w),
+          color: AppColors.backgroundPrimary,
+          padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 2.w),
           child: Column(
             children: [
               // My Leaves / Team Leaves sub-tab (shown only if manager)
@@ -1374,52 +1430,55 @@ class _LeaveScreenContentState extends State<_LeaveScreenContent>
           child: state.isLoading && state.leaveRequests.isEmpty
               ? const LeaveHistoryShimmer()
               : (state.errorMessage != null && state.leaveRequests.isEmpty)
-                  ? _buildErrorState(
-                      context: context,
-                      message: 'Could not load leave history.\nPlease try again.',
-                      onRetry: () =>
-                          context.read<LeaveBloc>().add(const LeaveLoadHistory()),
-                    )
-                  : filteredByMonth.isEmpty
-                      ? _buildEmptyState(
-                          icon: Icons.event_busy_outlined,
-                          title: 'No Leave Requests',
-                          subtitle: 'No leave requests found for ${DateFormat('MMMM yyyy').format(_currentDisplayMonth)}.',
-                          color: AppColors.primary,
-                        )
-                      : RefreshIndicator(
-                          onRefresh: () async {
-                            context.read<LeaveBloc>().add(const LeaveLoadHistory());
-                          },
-                          child: ListView.builder(
-                            padding: EdgeInsets.fromLTRB(4.w, 3.w, 4.w, 22.w),
-                            physics: const AlwaysScrollableScrollPhysics(
-                              parent: BouncingScrollPhysics(),
-                            ),
-                            itemCount: filteredByMonth.length,
-                            itemBuilder: (context, index) {
-                              final request = filteredByMonth[index];
-                              final bloc = context.read<LeaveBloc>();
-                              return LeaveHistoryCard(
-                                request: request,
-                                onEdit: () => _navigateToEditLeave(context, bloc, request),
-                                onDelete: () {},
-                                onViewDetails: () {
-                                  if (request.status == LeaveStatus.pending) {
-                                    _navigateToEditLeave(context, bloc, request);
-                                  }
-                                },
-                              );
-                            },
-                          ),
-                        ),
+              ? _buildErrorState(
+                  context: context,
+                  message: 'Could not load leave history.\nPlease try again.',
+                  onRetry: () =>
+                      context.read<LeaveBloc>().add(const LeaveLoadHistory()),
+                )
+              : filteredByMonth.isEmpty
+              ? _buildEmptyState(
+                  icon: Icons.event_busy_outlined,
+                  title: 'No Leave Requests',
+                  subtitle:
+                      'No leave requests found for ${DateFormat('MMMM yyyy').format(_currentDisplayMonth)}.',
+                  color: AppColors.primary,
+                )
+              : RefreshIndicator(
+                  onRefresh: () async {
+                    context.read<LeaveBloc>().add(const LeaveLoadHistory());
+                  },
+                  child: ListView.builder(
+                    padding: EdgeInsets.fromLTRB(2.w, 2.w, 2.w, 5.w),
+                    physics: const AlwaysScrollableScrollPhysics(
+                      parent: BouncingScrollPhysics(),
+                    ),
+                    itemCount: filteredByMonth.length,
+                    itemBuilder: (context, index) {
+                      final request = filteredByMonth[index];
+                      final bloc = context.read<LeaveBloc>();
+                      return LeaveHistoryCard(
+                        request: request,
+                        onEdit: () =>
+                            _navigateToEditLeave(context, bloc, request),
+                        onDelete: () {},
+                        onViewDetails: () =>
+                            _showLeaveDetailsBottomSheet(context, request),
+                      );
+                    },
+                  ),
+                ),
         ),
       ],
     );
   }
 
   // ─────────────────────── TAB 3: TEAM REQUESTS ───────────────────────
-  Widget _buildTeamTab(BuildContext context, LeaveState state, {required bool isTeam}) {
+  Widget _buildTeamTab(
+    BuildContext context,
+    LeaveState state, {
+    required bool isTeam,
+  }) {
     final requests = isTeam ? state.teamRequests : state.allLeaves;
 
     if (state.isLoading && requests.isEmpty) {
@@ -1436,7 +1495,7 @@ class _LeaveScreenContentState extends State<_LeaveScreenContent>
     }
 
     return ListView.builder(
-      padding: EdgeInsets.all(4.w),
+      padding: EdgeInsets.all(2.w),
       itemCount: requests.length,
       itemBuilder: (context, i) {
         final request = requests[i];
@@ -1456,7 +1515,7 @@ class _LeaveScreenContentState extends State<_LeaveScreenContent>
           child: Column(
             children: [
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 3.w),
+                padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 3.w),
                 decoration: BoxDecoration(
                   color: AppColors.primary.withOpacity(0.07),
                   borderRadius: const BorderRadius.only(
@@ -1470,7 +1529,9 @@ class _LeaveScreenContentState extends State<_LeaveScreenContent>
                       radius: 5.w,
                       backgroundColor: AppColors.primary.withOpacity(0.15),
                       child: CustomText(
-                        (request.appliedBy ?? 'U').substring(0, 1).toUpperCase(),
+                        (request.appliedBy ?? 'U')
+                            .substring(0, 1)
+                            .toUpperCase(),
                         isKey: false,
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
@@ -1488,7 +1549,10 @@ class _LeaveScreenContentState extends State<_LeaveScreenContent>
                       ),
                     ),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.w),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 3.w,
+                        vertical: 1.w,
+                      ),
                       decoration: BoxDecoration(
                         color: request.status.color.withOpacity(0.12),
                         borderRadius: BorderRadius.circular(20),
@@ -1505,7 +1569,7 @@ class _LeaveScreenContentState extends State<_LeaveScreenContent>
                 ),
               ),
               Padding(
-                padding: EdgeInsets.all(4.w),
+                padding: EdgeInsets.all(2.w),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1518,7 +1582,11 @@ class _LeaveScreenContentState extends State<_LeaveScreenContent>
                     SizedBox(height: 2.w),
                     Row(
                       children: [
-                        Icon(Icons.date_range_rounded, size: 4.w, color: AppColors.primary),
+                        Icon(
+                          Icons.date_range_rounded,
+                          size: 4.w,
+                          color: AppColors.primary,
+                        ),
                         SizedBox(width: 2.w),
                         CustomText(
                           '${DateFormat('MMM dd, yyyy').format(request.fromDate)} → ${DateFormat('MMM dd, yyyy').format(request.toDate)}',
@@ -1595,12 +1663,18 @@ class _LeaveScreenContentState extends State<_LeaveScreenContent>
                     decoration: BoxDecoration(
                       color: AppColors.primary.withOpacity(0.10),
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: AppColors.primary.withOpacity(0.30)),
+                      border: Border.all(
+                        color: AppColors.primary.withOpacity(0.30),
+                      ),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.add_moderator_rounded, color: AppColors.primary, size: 4.5.w),
+                        Icon(
+                          Icons.add_moderator_rounded,
+                          color: AppColors.primary,
+                          size: 4.5.w,
+                        ),
                         SizedBox(width: 2.w),
                         CustomText(
                           'Override Leave',
@@ -1633,12 +1707,18 @@ class _LeaveScreenContentState extends State<_LeaveScreenContent>
                     decoration: BoxDecoration(
                       color: AppColors.dashboardTeal.withOpacity(0.10),
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: AppColors.dashboardTeal.withOpacity(0.30)),
+                      border: Border.all(
+                        color: AppColors.dashboardTeal.withOpacity(0.30),
+                      ),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.calendar_month_rounded, color: AppColors.dashboardTeal, size: 4.5.w),
+                        Icon(
+                          Icons.calendar_month_rounded,
+                          color: AppColors.dashboardTeal,
+                          size: 4.5.w,
+                        ),
                         SizedBox(width: 2.w),
                         CustomText(
                           'Filter Date',
@@ -1655,9 +1735,7 @@ class _LeaveScreenContentState extends State<_LeaveScreenContent>
             ],
           ),
         ),
-        Expanded(
-          child: _buildTeamTab(context, state, isTeam: false),
-        ),
+        Expanded(child: _buildTeamTab(context, state, isTeam: false)),
       ],
     );
   }
@@ -1766,7 +1844,11 @@ class _LeaveScreenContentState extends State<_LeaveScreenContent>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.refresh_rounded, color: Colors.white, size: 4.5.w),
+                    Icon(
+                      Icons.refresh_rounded,
+                      color: Colors.white,
+                      size: 4.5.w,
+                    ),
                     SizedBox(width: 2.w),
                     const CustomText(
                       'Try Again',
@@ -1799,19 +1881,20 @@ class LeaveBalanceShimmer extends StatelessWidget {
       padding: EdgeInsets.all(4.w),
       child: Column(
         children: List.generate(
-            5,
-            (i) => Shimmer.fromColors(
-                  baseColor: Colors.grey.shade200,
-                  highlightColor: Colors.white,
-                  child: Container(
-                    height: 14.w,
-                    margin: EdgeInsets.only(bottom: 3.w),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                )),
+          5,
+          (i) => Shimmer.fromColors(
+            baseColor: Colors.grey.shade200,
+            highlightColor: Colors.white,
+            child: Container(
+              height: 14.w,
+              margin: EdgeInsets.only(bottom: 3.w),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -1823,7 +1906,7 @@ class LeaveHistoryShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      padding: EdgeInsets.all(4.w),
+      padding: EdgeInsets.all(2.w),
       itemCount: 6,
       itemBuilder: (context, i) => Shimmer.fromColors(
         baseColor: Colors.grey.shade200,
