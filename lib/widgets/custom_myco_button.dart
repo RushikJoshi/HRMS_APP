@@ -1,0 +1,396 @@
+import 'package:flutter/material.dart';
+import '../utils/language_manager_utility.dart';
+import '../utils/responsive_utility.dart';
+import 'custom_myco_button_theme.dart';
+
+class MyCoButton extends StatelessWidget {
+  final void Function()? onTap;
+  final String title;
+  final BoxDecoration? decoration;
+  final double? height;
+  final double? width;
+  final TextStyle? textStyle;
+  final Color? backgroundColor;
+  final FontWeight? fontWeight;
+  final Widget? image;
+  final AxisDirection imagePosition;
+  final bool enabled;
+  final double? spacing;
+  final Border? border;
+  final Color? borderColor;
+  final double? borderWidth;
+  final double? boarderRadius;
+  final String? fontFamily;
+  final bool wantBorder;
+  final bool isShadowTopLeft;
+  final bool isShadowTopRight;
+  final bool isShadowBottomRight;
+  final bool isShadowBottomLeft;
+  final bool isTimecardbutton;
+
+  const MyCoButton({
+    required this.onTap,
+    required this.title,
+    super.key,
+    this.decoration,
+    this.height,
+    this.width,
+    this.textStyle,
+    this.backgroundColor,
+    this.fontWeight,
+    this.image,
+    this.imagePosition = AxisDirection.left,
+    this.enabled = true,
+    this.spacing,
+    this.border,
+    this.borderColor,
+    this.borderWidth,
+    this.boarderRadius,
+    this.fontFamily,
+    this.wantBorder = true,
+    this.isShadowTopLeft = false,
+    this.isShadowTopRight = false,
+    this.isShadowBottomRight = false,
+    this.isShadowBottomLeft = false,
+    this.isTimecardbutton = false,
+  });
+
+  @override
+  Widget build(BuildContext context) => _MyCoButtonMobile(
+    onTap: enabled ? onTap : null,
+    title: title,
+    height: height ?? 0.06 * Responsive.getHeight(context),
+    width: width,
+    backgroundColor: backgroundColor,
+    decoration: decoration,
+    textStyle: textStyle,
+    fontFamily: fontFamily,
+    fontWeight: fontWeight,
+    image: image,
+    imagePosition: imagePosition,
+    enabled: enabled,
+    spacing: spacing,
+    border: border,
+    borderColor: borderColor,
+    borderWidth: borderWidth,
+    boarderRadius: boarderRadius,
+    wantBorder: wantBorder,
+    isShadowTopLeft: isShadowTopLeft,
+    isShadowTopRight: isShadowTopRight,
+    isShadowBottomRight: isShadowBottomRight,
+    isShadowBottomLeft: isShadowBottomLeft,
+    isTimecardbutton: isTimecardbutton,
+  );
+}
+
+class _MyCoButtonMobile extends StatelessWidget {
+  final void Function()? onTap;
+  final String title;
+  final double? height;
+  final double? width;
+  final FontWeight? fontWeight;
+  final Color? backgroundColor;
+  final BoxDecoration? decoration;
+  final TextStyle? textStyle;
+  final Widget? image;
+  final AxisDirection imagePosition;
+  final bool enabled;
+  final double? spacing;
+  final Border? border;
+  final Color? borderColor;
+  final double? borderWidth;
+  final double? boarderRadius;
+  final String? fontFamily;
+  final bool wantBorder;
+  final bool isShadowTopLeft;
+  final bool isShadowTopRight;
+  final bool isShadowBottomRight;
+  final bool isShadowBottomLeft;
+  final bool isTimecardbutton;
+
+  const _MyCoButtonMobile({
+    required this.onTap,
+    required this.title,
+    required this.imagePosition,
+    this.height,
+    this.width,
+    this.fontWeight,
+    this.backgroundColor,
+    this.decoration,
+    this.textStyle,
+    this.image,
+    this.enabled = true,
+    this.spacing,
+    this.isTimecardbutton = false,
+    this.border,
+    this.borderColor,
+    this.borderWidth,
+    this.boarderRadius,
+    this.fontFamily,
+    this.wantBorder = true,
+    this.isShadowTopLeft = false,
+    this.isShadowTopRight = false,
+    this.isShadowBottomRight = false,
+    this.isShadowBottomLeft = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final Color bgColor = enabled
+        ? (backgroundColor ?? MyCoButtonTheme.mobileBackgroundColor)
+        : Colors.grey.shade400;
+
+    final TextStyle finalStyle =
+        (textStyle ?? MyCoButtonTheme.getMobileTextStyle(context)).copyWith(
+        );
+
+    final double radius = boarderRadius ?? MyCoButtonTheme.borderRadius ?? 8;
+
+    return InkWell(
+      onTap: onTap,
+      child: Stack(
+        children: [
+          Container(
+            height:
+                height ??
+                    (isTimecardbutton
+                        ? 0.06 * Responsive.getHeight(context)
+                        : 0.06 * Responsive.getHeight(context)),
+            width: width ?? 0.94 * Responsive.getWidth(context),
+            decoration:
+                decoration ??
+                BoxDecoration(
+                  color: bgColor,
+                  borderRadius: BorderRadius.circular(radius),
+                  border: wantBorder
+                      ? border ??
+                            Border.all(
+                              color:
+                                  borderColor ??
+                                  MyCoButtonTheme.defaultBorder.top.color,
+                              width:
+                                  borderWidth ??
+                                  MyCoButtonTheme.defaultBorder.top.width,
+                            )
+                      : null,
+                ),
+            child: Center(
+              child: _ButtonContent(
+                title: LanguageManager().get(title),
+                style: finalStyle,
+                image: image,
+                imagePosition: imagePosition,
+                spacing: spacing,
+                isTimecardbutton: isTimecardbutton,
+              ),
+            ),
+          ),
+          if (isShadowTopLeft ||
+              isShadowTopRight ||
+              isShadowBottomRight ||
+              isShadowBottomLeft) ...[
+            Positioned.fill(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(radius),
+                child: CustomPaint(
+                  painter: InnerShadowPainter(
+                    shadowColor: const Color(0x1A2FBBA4),
+                    blur: 1.4,
+                    offset: const Offset(0, 1),
+                    borderRadius: radius,
+                    isShadowTopLeft: isShadowTopLeft,
+                    isShadowTopRight: isShadowTopRight,
+                    isShadowBottomRight: isShadowBottomRight,
+                    isShadowBottomLeft: isShadowBottomLeft,
+                  ),
+                ),
+              ),
+            ),
+            Positioned.fill(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(radius),
+                child: CustomPaint(
+                  painter: InnerShadowPainter(
+                    shadowColor: Colors.black38,
+                    blur: 4,
+                    offset: const Offset(4, -3),
+                    borderRadius: radius,
+                    isShadowTopLeft: isShadowTopLeft,
+                    isShadowTopRight: isShadowTopRight,
+                    isShadowBottomRight: isShadowBottomRight,
+                    isShadowBottomLeft: isShadowBottomLeft,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _ButtonContent extends StatelessWidget {
+  final String title;
+  final TextStyle style;
+  final Widget? image;
+  final AxisDirection imagePosition;
+  final double? spacing;
+  final bool isTimecardbutton;
+
+  const _ButtonContent({
+    required this.title,
+    required this.style,
+    required this.imagePosition,
+    this.image,
+    this.spacing,
+    this.isTimecardbutton = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final imageWidget = image ?? const SizedBox();
+    final double gap = spacing ?? 1;
+
+    List<Widget> children;
+
+    if (imagePosition == AxisDirection.left) {
+      children = [imageWidget, SizedBox(width: gap), Text(title, style: style)];
+    } else if (imagePosition == AxisDirection.right) {
+      children = [
+        isTimecardbutton
+            ? Expanded(child: Text(title, style: style))
+            : Text(title, style: style),
+        SizedBox(width: gap),
+        imageWidget,
+      ];
+    } else if (imagePosition == AxisDirection.up) {
+      children = [
+        imageWidget,
+        SizedBox(height: gap),
+        Text(title, style: style),
+      ];
+    } else {
+      children = [
+        Text(title, style: style),
+        SizedBox(height: gap),
+        imageWidget,
+      ];
+    }
+
+    return (imagePosition == AxisDirection.left ||
+            imagePosition == AxisDirection.right)
+        ? Padding(
+            padding: isTimecardbutton
+                ? EdgeInsets.symmetric(
+                    horizontal: 0.02 * Responsive.getWidth(context),
+                  )
+                : const EdgeInsets.all(0),
+            child: Row(
+              mainAxisSize: isTimecardbutton
+                  ? MainAxisSize.max
+                  : MainAxisSize.min,
+              mainAxisAlignment: isTimecardbutton
+                  ? MainAxisAlignment.spaceBetween
+                  : MainAxisAlignment.center,
+              children: children,
+            ),
+          )
+        : Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: children,
+          );
+  }
+}
+
+class InnerShadowPainter extends CustomPainter {
+  final Color shadowColor;
+  final double blur;
+  final Offset offset;
+  final double borderRadius;
+  final bool isShadowTopLeft;
+  final bool isShadowTopRight;
+  final bool isShadowBottomRight;
+  final bool isShadowBottomLeft;
+
+  InnerShadowPainter({
+    required this.shadowColor,
+    required this.blur,
+    required this.offset,
+    required this.borderRadius,
+    this.isShadowTopLeft = false,
+    this.isShadowTopRight = false,
+    this.isShadowBottomRight = false,
+    this.isShadowBottomLeft = false,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint paint = Paint()
+      ..color = shadowColor
+      ..maskFilter = MaskFilter.blur(BlurStyle.normal, blur);
+
+    final Rect rect = Offset.zero & size;
+    final RRect rrect = RRect.fromRectAndRadius(
+      rect,
+      Radius.circular(borderRadius),
+    );
+    final Path outer = Path()
+      ..addRect(
+        Rect.fromLTRB(
+          -size.width,
+          -size.height,
+          size.width * 2,
+          size.height * 2,
+        ),
+      );
+    final Path inner = Path()
+      ..addRRect(rrect)
+      ..fillType = PathFillType.evenOdd;
+
+    canvas.saveLayer(rect, Paint());
+
+    if (isShadowBottomRight) {
+      canvas.save();
+      canvas.translate(-offset.dx.abs(), -offset.dy.abs());
+      canvas.drawPath(
+        Path.combine(PathOperation.difference, outer, inner),
+        paint,
+      );
+      canvas.restore();
+    }
+    if (isShadowBottomLeft) {
+      canvas.save();
+      canvas.translate(offset.dx.abs(), -offset.dy.abs());
+      canvas.drawPath(
+        Path.combine(PathOperation.difference, outer, inner),
+        paint,
+      );
+      canvas.restore();
+    }
+    if (isShadowTopLeft) {
+      canvas.save();
+      canvas.translate(offset.dx.abs(), offset.dy.abs());
+      canvas.drawPath(
+        Path.combine(PathOperation.difference, outer, inner),
+        paint,
+      );
+      canvas.restore();
+    }
+    if (isShadowTopRight) {
+      canvas.save();
+      canvas.translate(-offset.dx.abs(), offset.dy.abs());
+      canvas.drawPath(
+        Path.combine(PathOperation.difference, outer, inner),
+        paint,
+      );
+      canvas.restore();
+    }
+
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => true;
+}
