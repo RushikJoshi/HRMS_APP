@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:hrms_ess/widgets/AppShadowContainer.dart';
 import 'package:sizer/sizer.dart';
 import '../utils/app_colors.dart';
-import 'app_inner_shadow.dart';
 import 'border_container_wraper.dart';
 import 'custom_text.dart';
 
@@ -63,33 +63,38 @@ class CommonGridSection extends StatelessWidget {
   Widget _buildStandardHeader() {
     return Padding(
       padding: EdgeInsets.all(2.w),
-      child: Container(
-        padding: EdgeInsets.all(2.5.w),
-        decoration: BoxDecoration(
-          color: AppColors.primary,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            CustomText(
-              title,
-              isKey: false,
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-            if (sectionGif != null)
-              Image.asset(
-                sectionGif!,
-                height: 6.w,
-                width: 6.w,
-                errorBuilder: (c, e, s) =>
-                    const Icon(Icons.star, color: Colors.white),
-              )
-            else if (sectionIcon != null)
-              Icon(sectionIcon, color: Colors.white, size: 6.w),
-          ],
+      child: AppShadowContainer(
+        backgroundColor:  AppColors.primary,
+        borderRadius: 0,
+        topRightRadius: 10,
+        topLeftRadius: 10,
+        innerBlur: 3,
+        innerBottom: true,
+        child: Container(
+          padding: EdgeInsets.all(2.5.w),
+
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              CustomText(
+                title,
+                isKey: false,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+              if (sectionGif != null)
+                Image.asset(
+                  sectionGif!,
+                  height: 6.w,
+                  width: 6.w,
+                  errorBuilder: (c, e, s) =>
+                      const Icon(Icons.star, color: Colors.white),
+                )
+              else if (sectionIcon != null)
+                Icon(sectionIcon, color: Colors.white, size: 6.w),
+            ],
+          ),
         ),
       ),
     );
@@ -185,17 +190,11 @@ class _GridCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Unified circular shadow icon container
-            AppInnerShadow(
-              borderRadius: 10,
-              shadowRadius: 20,
-              height: 70,
-              width: 70,
-              backgroundColor: Colors.white,
-              top: false,
-              right: true,
-              bottom: true,
-              left: true,
-              blur: 4,
+            AppShadowContainer(
+              height: 11.h,
+              width: 21.w,
+              innerBottom: true,
+              innerBlur: 4,
               border: Border.all(width: 0.9, color: Colors.grey.shade300),
               child: Center(child: _buildIcon()),
             ),

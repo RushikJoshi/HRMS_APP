@@ -4,9 +4,8 @@ import 'package:flutter/material.dart';
 class InnerShadowPainter extends CustomPainter {
   final Color shadowColor;
   final double blur;
-  final double spread;
   final Offset offset;
-  final BorderRadius borderRadius;
+  final double borderRadius;
 
   final bool top;
   final bool right;
@@ -16,91 +15,66 @@ class InnerShadowPainter extends CustomPainter {
   InnerShadowPainter({
     required this.shadowColor,
     required this.blur,
-    required this.spread,
     required this.offset,
     required this.borderRadius,
-    this.top = false,
-    this.right = false,
-    this.bottom = false,
-    this.left = false,
+    required this.top,
+    required this.right,
+    required this.bottom,
+    required this.left,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    /// ❌ Nothing selected → no shadow
-    if (!top && !right && !bottom && !left) return;
-
     final rect = Offset.zero & size;
-    final rrect = borderRadius.toRRect(rect);
+
+    final rrect = RRect.fromRectAndRadius(
+      rect,
+      Radius.circular(borderRadius),
+    );
 
     final paint = Paint()
+      ..color = shadowColor
       ..maskFilter = MaskFilter.blur(BlurStyle.normal, blur);
+
+    final outer = Path()
+      ..addRect(Rect.fromLTRB(
+        -size.width,
+        -size.height,
+        size.width * 2,
+        size.height * 2,
+      ));
+
+    final inner = Path()
+      ..addRRect(rrect);
 
     canvas.saveLayer(rect, Paint());
 
-    /// TOP
-    if (top) {
-      paint.shader = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [shadowColor, Colors.transparent],
-      ).createShader(Rect.fromLTWH(0, 0, size.width, spread));
+    final shadowPaint = Paint()
+      ..blendMode = BlendMode.srcATop
+      ..colorFilter = ColorFilter.mode(shadowColor, BlendMode.srcOut)
+      ..imageFilter = ImageFilter.blur(sigmaX: blur, sigmaY: blur);
 
-      canvas.drawRect(
-        Rect.fromLTWH(0, 0, size.width, spread),
+    canvas.saveLayer(rect.inflate(blur), shadowPaint);
+
+    void draw(Offset shift) {
+      canvas.save();
+      canvas.translate(shift.dx, shift.dy);
+      canvas.drawPath(
+        Path.combine(PathOperation.difference, outer, inner),
         paint,
       );
+      canvas.restore();
     }
 
-    /// BOTTOM
-    if (bottom) {
-      paint.shader = LinearGradient(
-        begin: Alignment.bottomCenter,
-        end: Alignment.topCenter,
-        colors: [shadowColor, Colors.transparent],
-      ).createShader(Rect.fromLTWH(0, size.height - spread, size.width, spread));
+    if (top) draw(Offset(0, blur));
+    if (bottom) draw(Offset(0, -blur));
+    if (left) draw(Offset(blur, 0));
+    if (right) draw(Offset(-blur, 0));
 
-      canvas.drawRect(
-        Rect.fromLTWH(0, size.height - spread, size.width, spread),
-        paint,
-      );
-    }
-
-    /// LEFT
-    if (left) {
-      paint.shader = LinearGradient(
-        begin: Alignment.centerLeft,
-        end: Alignment.centerRight,
-        colors: [shadowColor, Colors.transparent],
-      ).createShader(Rect.fromLTWH(0, 0, spread, size.height));
-
-      canvas.drawRect(
-        Rect.fromLTWH(0, 0, spread, size.height),
-        paint,
-      );
-    }
-
-    /// RIGHT
-    if (right) {
-      paint.shader = LinearGradient(
-        begin: Alignment.centerRight,
-        end: Alignment.centerLeft,
-        colors: [shadowColor, Colors.transparent],
-      ).createShader(Rect.fromLTWH(size.width - spread, 0, spread, size.height));
-
-      canvas.drawRect(
-        Rect.fromLTWH(size.width - spread, 0, spread, size.height),
-        paint,
-      );
-    }
-
-    /// Keep inside rounded shape
-    final clipPath = Path()..addRRect(rrect);
-    canvas.drawPath(clipPath, Paint()..blendMode = BlendMode.dstIn);
-
+    canvas.restore();
     canvas.restore();
   }
 
   @override
-  bool shouldRepaint(covariant InnerShadowPainter oldDelegate) => true;
+  bool shouldRepaint(CustomPainter oldDelegate) => true;
 }

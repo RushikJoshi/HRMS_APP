@@ -17,6 +17,7 @@ import '../models/leave/leave_request_model.dart';
 import '../models/api/employee_option.dart';
 import '../models/api/profile_response.dart'; // Added for ProfileData
 import '../utils/app_icons.dart';
+import '../utils/app_colors.dart';
 import '../widgets/custom_text.dart';
 import '../widgets/custom_text_field_new.dart';
 
@@ -70,7 +71,7 @@ class _ApplyLeaveScreenContent extends StatelessWidget {
                   ),
                 ],
               ),
-              backgroundColor: const Color(0xFFE53935),
+              backgroundColor: AppColors.error,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -95,7 +96,7 @@ class _ApplyLeaveScreenContent extends StatelessWidget {
                   ),
                 ],
               ),
-              backgroundColor: const Color(0xFF2E7D32),
+              backgroundColor:  AppColors.greenDark,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -127,10 +128,10 @@ class _ApplyLeaveScreenContent extends StatelessWidget {
                 return Theme(
                   data: Theme.of(context).copyWith(
                     colorScheme: const ColorScheme.light(
-                      primary: Color(0xFF1E88E5),
+                      primary: AppColors.dashboardBlue,
                       onPrimary: Colors.white,
                       surface: Colors.white,
-                      onSurface: Color(0xFF1A1A1A),
+                      onSurface: AppColors.textColorDark,
                     ),
                   ),
                   child: child!,
@@ -167,11 +168,11 @@ class _ApplyLeaveScreenContent extends StatelessWidget {
                   padding: EdgeInsets.symmetric(vertical: 2.5.w),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? const Color(0xFF1E88E5).withOpacity(0.1)
+                        ?  AppColors.dashboardBlue.withOpacity(0.1)
                         : Colors.transparent,
                     border: Border.all(
                       color: isSelected
-                          ? const Color(0xFF1E88E5)
+                          ?  AppColors.dashboardBlue
                           : Colors.grey.shade300,
                     ),
                     borderRadius: BorderRadius.circular(8),
@@ -185,7 +186,7 @@ class _ApplyLeaveScreenContent extends StatelessWidget {
                             : Icons.radio_button_off,
                         size: 14.sp,
                         color: isSelected
-                            ? const Color(0xFF1E88E5)
+                            ?  AppColors.dashboardBlue
                             : Colors.grey.shade600,
                       ),
                       SizedBox(width: 2.w),
@@ -197,7 +198,7 @@ class _ApplyLeaveScreenContent extends StatelessWidget {
                               ? FontWeight.w600
                               : FontWeight.normal,
                           color: isSelected
-                              ? const Color(0xFF1E88E5)
+                              ?  AppColors.dashboardBlue
                               : Colors.grey.shade700,
                         ),
                       ),
@@ -209,18 +210,18 @@ class _ApplyLeaveScreenContent extends StatelessWidget {
           }
 
           return Scaffold(
-            backgroundColor: const Color(0xFFF5F7FA),
+            backgroundColor:  AppColors.backgroundPrimary,
             appBar: AppBar(
               title: const CustomText(
                 'Apply for Leave',
                 isKey: false,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF1A1A1A),
+                color: AppColors.textColorDark,
               ),
               backgroundColor: Colors.white,
               elevation: 0,
-              iconTheme: const IconThemeData(color: Color(0xFF1A1A1A)),
+              iconTheme: const IconThemeData(color: AppColors.textColorDark),
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back_rounded),
                 onPressed: () => Navigator.pop(context),
@@ -255,8 +256,8 @@ class _ApplyLeaveScreenContent extends StatelessWidget {
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
-                                  const Color(0xFF1E88E5).withOpacity(0.08),
-                                  const Color(0xFF1E88E5).withOpacity(0.02),
+                                   AppColors.dashboardBlue.withOpacity(0.08),
+                                   AppColors.dashboardBlue.withOpacity(0.02),
                                 ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
@@ -271,7 +272,7 @@ class _ApplyLeaveScreenContent extends StatelessWidget {
                                 Container(
                                   padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF1E88E5),
+                                    color:  AppColors.dashboardBlue,
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Icon(
@@ -289,7 +290,7 @@ class _ApplyLeaveScreenContent extends StatelessWidget {
                                       style: TextStyle(
                                         fontSize: 14.sp,
                                         fontWeight: FontWeight.bold,
-                                        color: const Color(0xFF1A1A1A),
+                                        color: AppColors.textColorDark,
                                         letterSpacing: -0.3,
                                       ),
                                     ),
@@ -343,7 +344,7 @@ class _ApplyLeaveScreenContent extends StatelessWidget {
                                             style: TextStyle(fontSize: 9.sp),
                                           ),
                                           value: state.isApplyingOnBehalf,
-                                          activeColor: const Color(0xFF1E88E5),
+                                          activeColor:  AppColors.dashboardBlue,
                                           contentPadding: EdgeInsets.symmetric(
                                             horizontal: 4.w,
                                             vertical: 1.w,
@@ -443,7 +444,7 @@ class _ApplyLeaveScreenContent extends StatelessWidget {
                                           style: TextStyle(
                                             fontSize: 13.sp,
                                             fontWeight: FontWeight.bold,
-                                            color: const Color(0xFF333333),
+                                            color: AppColors.textPrimary2,
                                           ),
                                           textAlign: TextAlign.center,
                                         ),
@@ -582,7 +583,7 @@ class _ApplyLeaveScreenContent extends StatelessWidget {
                                         ),
                                         child: Icon(
                                           Icons.arrow_forward_rounded,
-                                          color: const Color(0xFF1E88E5),
+                                          color:  AppColors.dashboardBlue,
                                           size: 16.sp,
                                         ),
                                       ),
@@ -640,7 +641,7 @@ class _ApplyLeaveScreenContent extends StatelessWidget {
                                           style: TextStyle(fontSize: 9.sp),
                                         ),
                                         value: state.isHalfDay,
-                                        activeColor: const Color(0xFF1E88E5),
+                                        activeColor:  AppColors.dashboardBlue,
                                         onChanged: (val) {
                                           bloc.add(
                                             const ApplyLeaveHalfDayToggled(),
@@ -775,7 +776,7 @@ class _ApplyLeaveScreenContent extends StatelessWidget {
                                         Container(
                                           padding: EdgeInsets.all(2.5.w),
                                           decoration: const BoxDecoration(
-                                            color: Color(0xFF1E88E5),
+                                            color: AppColors.dashboardBlue,
                                             shape: BoxShape.circle,
                                           ),
                                           child: Icon(
@@ -987,11 +988,11 @@ class _ApplyLeaveScreenContent extends StatelessWidget {
                     ElevatedButton(
                       onPressed: state.isSubmitting ? null : _handleSubmit,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1E88E5),
+                        backgroundColor:  AppColors.dashboardBlue,
                         foregroundColor: Colors.white,
                         padding: EdgeInsets.symmetric(vertical: 4.5.w),
                         elevation: 0,
-                        shadowColor: const Color(0xFF1E88E5).withOpacity(0.4),
+                        shadowColor:  AppColors.dashboardBlue.withOpacity(0.4),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),
@@ -1042,12 +1043,12 @@ class _ApplyLeaveScreenContent extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF1E88E5), Color(0xFF1565C0)],
+          colors: [AppColors.dashboardBlue, AppColors.loginPrimaryBlue],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF1976D2).withOpacity(0.3),
+            color: AppColors.loginPrimaryBlue.withOpacity(0.3),
             blurRadius: 4.w,
             offset: Offset(0, 2.h),
           ),
@@ -1115,7 +1116,7 @@ class _ApplyLeaveScreenContent extends StatelessWidget {
             children: [
               Icon(
                 Icons.account_balance_wallet_rounded,
-                color: Color(0xFF1E88E5),
+                color: AppColors.dashboardBlue,
                 size: 18.sp,
               ),
               SizedBox(width: 2.5.w),
@@ -1124,7 +1125,7 @@ class _ApplyLeaveScreenContent extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12.sp,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1A1A1A),
+                  color: AppColors.textColorDark,
                 ),
               ),
             ],
@@ -1136,7 +1137,7 @@ class _ApplyLeaveScreenContent extends StatelessWidget {
                 child: _buildBalanceItem(
                   'Annual',
                   '12',
-                  const Color(0xFF4CAF50),
+                   AppColors.greenDark,
                 ),
               ),
               Container(
@@ -1145,7 +1146,7 @@ class _ApplyLeaveScreenContent extends StatelessWidget {
                 color: Colors.grey.shade200,
               ),
               Expanded(
-                child: _buildBalanceItem('Sick', '8', const Color(0xFFFF9800)),
+                child: _buildBalanceItem('Sick', '8',  AppColors.dashboardOrange),
               ),
               Container(
                 width: 0.25.w,
@@ -1156,7 +1157,7 @@ class _ApplyLeaveScreenContent extends StatelessWidget {
                 child: _buildBalanceItem(
                   'Casual',
                   '6',
-                  const Color(0xFF2196F3),
+                  AppColors.dashboardBlue,
                 ),
               ),
             ],
@@ -1197,7 +1198,7 @@ class _ApplyLeaveScreenContent extends StatelessWidget {
           width: 1.w,
           height: 5.w,
           decoration: BoxDecoration(
-            color: const Color(0xFF1E88E5),
+            color:  AppColors.dashboardBlue,
             borderRadius: BorderRadius.circular(2),
           ),
         ),
@@ -1207,7 +1208,7 @@ class _ApplyLeaveScreenContent extends StatelessWidget {
           style: TextStyle(
             fontSize: 11.sp,
             fontWeight: FontWeight.bold,
-            color: const Color(0xFF1A1A1A),
+            color: AppColors.textColorDark,
           ),
         ),
       ],
@@ -1217,15 +1218,15 @@ class _ApplyLeaveScreenContent extends StatelessWidget {
   Color _getLeaveTypeColor(LeaveType type) {
     switch (type) {
       case LeaveType.annual:
-        return const Color(0xFF4CAF50);
+        return  AppColors.greenDark;
       case LeaveType.sick:
-        return const Color(0xFFFF9800);
+        return  AppColors.dashboardOrange;
       case LeaveType.casual:
-        return const Color(0xFF2196F3);
+        return AppColors.dashboardBlue;
       case LeaveType.maternity:
-        return const Color(0xFFE91E63);
+        return  AppColors.dashboardPink;
       case LeaveType.paternity:
-        return const Color(0xFF9C27B0);
+        return  AppColors.dashboardPink;
       default:
         return Colors.grey;
     }
@@ -1259,7 +1260,7 @@ class _ApplyLeaveScreenContent extends StatelessWidget {
         color: Colors.grey.shade700,
         fontWeight: FontWeight.w500,
       ),
-      prefixIcon: Icon(icon, color: const Color(0xFF1E88E5), size: 16.sp),
+      prefixIcon: Icon(icon, color:  AppColors.dashboardBlue, size: 16.sp),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: BorderSide(color: Colors.grey.shade300),
@@ -1270,20 +1271,21 @@ class _ApplyLeaveScreenContent extends StatelessWidget {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFF1E88E5), width: 2),
+        borderSide: const BorderSide(color: AppColors.dashboardBlue, width: 2),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFFE53935), width: 1.5),
+        borderSide: const BorderSide(color: AppColors.error, width: 1.5),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFFE53935), width: 2),
+        borderSide: const BorderSide(color: AppColors.error, width: 2),
       ),
       filled: true,
-      fillColor: const Color(0xFFF8F9FA),
+      fillColor: AppColors.gray5,
       contentPadding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 4.w),
       errorStyle: TextStyle(fontSize: 9.sp, fontWeight: FontWeight.w500),
     );
   }
 }
+

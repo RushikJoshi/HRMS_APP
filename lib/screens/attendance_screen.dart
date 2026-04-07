@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
+import '../utils/app_colors.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import '../bloc/attendance/attendance_bloc.dart';
@@ -98,17 +99,17 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
   Widget _buildContent() {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor:  AppColors.surfacePrimary,
       appBar: AppBar(
         title: const CustomText(
           'Attendance',
           isKey: false,
           fontSize: 18,
           fontWeight: FontWeight.bold,
-          color: Color(0xFF333333),
+          color: AppColors.textPrimary2,
         ),
         centerTitle: true,
-        backgroundColor: const Color(0xFFF5F5F5),
+        backgroundColor:  AppColors.surfacePrimary,
         elevation: 0,
         leading: Container(
           margin: EdgeInsets.all(2.w),
@@ -280,7 +281,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                           isKey: false,
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
-                          color: const Color(0xFF333333),
+                          color:  AppColors.textPrimary2,
                         ),
                         if (record.status != null)
                           Container(
@@ -312,21 +313,21 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                           child: _buildStatColumn(
                             'Check In',
                             checkIn,
-                            const Color(0xFF1976D2),
+                             AppColors.loginPrimaryBlue,
                           ),
                         ),
                         Expanded(
                           child: _buildStatColumn(
                             'Check Out',
                             checkOut,
-                            const Color(0xFF00C853),
+                             AppColors.greenDark,
                           ),
                         ),
                         Expanded(
                           child: _buildStatColumn(
                             "Working Hrs",
                             workingHrs,
-                            const Color(0xFFFFA000),
+                             AppColors.dashboardOrange,
                           ),
                         ),
                       ],
@@ -367,7 +368,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   Color _getStatusColor(String? status) {
     if (status == null) return Colors.grey;
     final s = status.toLowerCase();
-    if (s.contains('present')) return const Color(0xFF00C853);
+    if (s.contains('present')) return  AppColors.greenDark;
     if (s.contains('absent')) return Colors.red;
     if (s.contains('half')) return Colors.orange;
     if (s.contains('leave')) return Colors.purple;
@@ -378,3 +379,4 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 }
+

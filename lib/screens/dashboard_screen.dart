@@ -1,9 +1,9 @@
 import 'dart:ui';
 import 'dart:math' as math;
+import 'package:hrms_ess/widgets/AppShadowContainer.dart';
 import 'package:sizer/sizer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../widgets/app_inner_shadow.dart';
 import '../widgets/custom_timer.dart';
 import '../widgets/my_team_section.dart';
 import '../widgets/upcoming_celebration_section.dart';
@@ -366,7 +366,7 @@ class _DashboardScreenContent extends StatelessWidget {
           }
 
           return Scaffold(
-            backgroundColor: const Color(0xFFF9FBFF),
+            backgroundColor:  AppColors.backgroundPrimary,
             body: SafeArea(
               child: BlocBuilder<AttendanceBloc, AttendanceState>(
                 builder: (context, state) {
@@ -647,21 +647,16 @@ class _DashboardScreenContent extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
-      child: AppInnerShadow(
-        borderRadius: 10,
-        shadowRadius: 10,
-        shadowColor: Colors.black,
-        top: true,
-        right: true,
-        bottom: true,
-        left: true,
-        blur: 2,
+      child: AppShadowContainer(
+        backgroundColor: color,
+        innerTop: false,
+        innerBlur: 3,
+        innerBottom: true,
+        innerLeft: false,
+        innerRight: false,
+
         child: Container(
           height: 12.w,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(10),
-          ),
           padding: EdgeInsets.symmetric(horizontal: 4.w),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -804,3 +799,4 @@ class _DashboardScreenContent extends StatelessWidget {
     );
   }
 }
+

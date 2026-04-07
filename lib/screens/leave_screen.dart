@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hrms_ess/utils/responsive_utility.dart';
+import 'package:hrms_ess/widgets/AppShadowContainer.dart';
 import 'package:sizer/sizer.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -18,7 +19,6 @@ import '../utils/app_colors.dart';
 import '../widgets/custom_text.dart';
 import '../widgets/custom_text_field_new.dart';
 import '../widgets/border_container_wraper.dart';
-import '../widgets/app_inner_shadow.dart';
 import '../widgets/leave_detail_bottom_sheet.dart';
 import '../widgets/leave_expandable_card.dart';
 
@@ -32,14 +32,14 @@ class LeaveBalanceCard extends StatelessWidget {
 
   Color get _cardColor {
     final t = (balance.leaveType ?? '').toLowerCase();
-    if (t.contains('casual')) return const Color(0xFF1E88E5);
-    if (t.contains('sick')) return const Color(0xFF26C6DA);
-    if (t.contains('birthday')) return const Color(0xFF8E6BBF);
-    if (t.contains('comp') || t.contains('off')) return const Color(0xFF26A69A);
+    if (t.contains('casual')) return AppColors.dashboardBlue;
+    if (t.contains('sick')) return AppColors.dashboardTeal;
+    if (t.contains('birthday')) return AppColors.dashboardPink;
+    if (t.contains('comp') || t.contains('off')) return AppColors.dashboardTeal;
     if (t.contains('earned') || t.contains('annual'))
-      return const Color(0xFF43A047);
+      return AppColors.greenDark;
     if (t.contains('maternity') || t.contains('paternity'))
-      return const Color(0xFFEC407A);
+      return AppColors.dashboardPink;
     return AppColors.primary;
   }
 
@@ -150,42 +150,32 @@ class LeaveBalanceCard extends StatelessWidget {
 
   Widget _statCell(String label, String value, Color color, IconData icon) {
     return Expanded(
-      child: AppInnerShadow(
-        borderRadius: 12,
-        shadowColor: Colors.black.withOpacity(0.06),
-        top: true,
-        left: true,
-        blur: 4,
-        spread: 2,
-        backgroundColor: Colors.white,
-        padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 2.5.w),
-        child: Row(
-          children: [
-            Icon(icon, size: 4.w, color: color),
-            SizedBox(width: 2.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CustomText(
-                    label,
-                    isKey: false,
-                    fontSize: 9,
-                    color: Colors.grey.shade600,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  CustomText(
-                    ': $value',
-                    isKey: false,
-                    fontSize: 12,
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ],
-              ),
+      child: Row(
+        children: [
+          Icon(icon, size: 4.w, color: color),
+          SizedBox(width: 2.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CustomText(
+                  label,
+                  isKey: false,
+                  fontSize: 9,
+                  color: Colors.grey.shade600,
+                  fontWeight: FontWeight.w500,
+                ),
+                CustomText(
+                  ': $value',
+                  isKey: false,
+                  fontSize: 12,
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -223,15 +213,15 @@ class LeaveHistoryCard extends StatelessWidget {
 
   Color get _headerColor {
     final t = request.type.label.toLowerCase();
-    if (t.contains('short')) return const Color(0xFF26C6DA);
-    if (t.contains('casual')) return const Color(0xFF42A5F5);
-    if (t.contains('sick')) return const Color(0xFFEF5350);
+    if (t.contains('short')) return AppColors.dashboardTeal;
+    if (t.contains('casual')) return AppColors.dashboardBlue;
+    if (t.contains('sick')) return AppColors.error;
     if (t.contains('earned') || t.contains('annual'))
-      return const Color(0xFF66BB6A);
-    if (t.contains('optional')) return const Color(0xFFFFA726);
-    if (t.contains('auto')) return const Color(0xFFFFCA28);
-    if (t.contains('comp') || t.contains('off')) return const Color(0xFF26A69A);
-    if (t.contains('birthday')) return const Color(0xFF8E6BBF);
+      return AppColors.greenDark;
+    if (t.contains('optional')) return AppColors.dashboardOrange;
+    if (t.contains('auto')) return AppColors.spanishYellow;
+    if (t.contains('comp') || t.contains('off')) return AppColors.dashboardTeal;
+    if (t.contains('birthday')) return AppColors.dashboardPink;
     return AppColors.primary;
   }
 
@@ -249,7 +239,7 @@ class LeaveHistoryCard extends StatelessWidget {
 
     return BorderContainerWraper(
       margin: EdgeInsets.only(bottom: 3.w),
-      padding:EdgeInsets.all(0),
+      padding: EdgeInsets.all(0),
       // decoration: BoxDecoration(
       //   color: Colors.white,
       //   borderRadius: BorderRadius.circular(14),
@@ -264,20 +254,15 @@ class LeaveHistoryCard extends StatelessWidget {
       child: Column(
         children: [
           // ── Colored Date Header ──
-          AppInnerShadow(
-            top: true,
+          AppShadowContainer(
             borderRadius: 0,
-            bottom: true,
-            blur: 3,
+        topLeftRadius: 6,
+        topRightRadius: 6,
+        innerBottom: true,
+        innerBlur: 3,
+        backgroundColor:color,
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.w),
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(8),
-                  topRight: Radius.circular(8),
-                ),
-              ),
               child: Row(
                 children: [
                   Icon(
@@ -379,7 +364,7 @@ class LeaveHistoryCard extends StatelessWidget {
                   color: AppColors.textSecondary,
                   fontWeight: FontWeight.w500,
                 ),
-                if (request.reason?.isNotEmpty ?? false) ...[
+                if (request.reason.isNotEmpty) ...[
                   SizedBox(height: 1.5.w),
                   Row(
                     children: [
@@ -391,7 +376,7 @@ class LeaveHistoryCard extends StatelessWidget {
                       SizedBox(width: 1.5.w),
                       Expanded(
                         child: CustomText(
-                          request.reason ?? '',
+                          request.reason,
                           isKey: false,
                           fontSize: 10,
                           color: Colors.grey.shade500,
@@ -483,8 +468,6 @@ class LeaveHistoryCard extends StatelessWidget {
         return 'Paid Leave';
       case LeaveType.eol:
         return 'Unpaid Leave';
-      default:
-        return 'Paid Leave';
     }
   }
 }
@@ -669,96 +652,86 @@ class LeaveSummaryStats extends StatelessWidget {
     final remaining = totalEntitled - totalUsed;
     final percent = totalEntitled > 0 ? totalUsed / totalEntitled : 0.0;
 
-    return Container(
-      margin: EdgeInsets.only(bottom: 4.w),
-      padding: EdgeInsets.all(4.w),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppColors.primary, AppColors.primary.withOpacity(0.80)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withOpacity(0.30),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // Circular progress
-          SizedBox(
-            width: 22.w,
-            height: 22.w,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                SizedBox(
-                  width: 22.w,
-                  height: 22.w,
-                  child: CircularProgressIndicator(
-                    value: 1.0,
-                    strokeWidth: 4.w,
-                    color: Colors.white.withOpacity(0.20),
-                    strokeCap: StrokeCap.round,
+    return AppShadowContainer(
+      height: 15.h,
+      backgroundColor: AppColors.primary,
+      innerBottom: true,
+      innerBlur: 4,
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          children: [
+            // Circular progress
+            SizedBox(
+              width: 22.w,
+              height: 22.w,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  SizedBox(
+                    width: 22.w,
+                    height: 22.w,
+                    child: CircularProgressIndicator(
+                      value: 1.0,
+                      strokeWidth: 4.w,
+                      color: Colors.white.withOpacity(0.20),
+                      strokeCap: StrokeCap.round,
+                    ),
                   ),
-                ),
-                SizedBox(
-                  width: 22.w,
-                  height: 22.w,
-                  child: CircularProgressIndicator(
-                    value: percent.clamp(0.0, 1.0),
-                    strokeWidth: 4.w,
-                    color: Colors.white,
-                    strokeCap: StrokeCap.round,
-                  ),
-                ),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CustomText(
-                      '$totalUsed',
-                      isKey: false,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
+                  SizedBox(
+                    width: 22.w,
+                    height: 22.w,
+                    child: CircularProgressIndicator(
+                      value: percent.clamp(0.0, 1.0),
+                      strokeWidth: 4.w,
                       color: Colors.white,
+                      strokeCap: StrokeCap.round,
                     ),
-                    CustomText(
-                      'Used',
-                      isKey: false,
-                      fontSize: 8,
-                      color: Colors.white.withOpacity(0.80),
-                    ),
-                  ],
-                ),
-              ],
+                  ),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CustomText(
+                        '$totalUsed',
+                        isKey: false,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
+                      CustomText(
+                        'Used',
+                        isKey: false,
+                        fontSize: 8,
+                        color: Colors.white.withOpacity(0.80),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-          SizedBox(width: 5.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CustomText(
-                  'Leave Summary',
-                  isKey: false,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-                SizedBox(height: 3.w),
-                _summaryRow('Total Entitled', '$totalEntitled Days'),
-                SizedBox(height: 1.5.w),
-                _summaryRow('Total Used', '$totalUsed Days'),
-                SizedBox(height: 1.5.w),
-                _summaryRow('Remaining', '$remaining Days'),
-              ],
+            SizedBox(width: 5.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CustomText(
+                    'Leave Summary',
+                    isKey: false,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                  SizedBox(height: 3.w),
+                  _summaryRow('Total Entitled', '$totalEntitled Days'),
+                  SizedBox(height: 1.5.w),
+                  _summaryRow('Total Used', '$totalUsed Days'),
+                  SizedBox(height: 1.5.w),
+                  _summaryRow('Remaining', '$remaining Days'),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -944,15 +917,15 @@ class _LeaveScreenContentState extends State<_LeaveScreenContent>
 
   Color _historyCardColor(LeaveRequest request) {
     final t = request.type.label.toLowerCase();
-    if (t.contains('short')) return const Color(0xFF26C6DA);
-    if (t.contains('casual')) return const Color(0xFF42A5F5);
-    if (t.contains('sick')) return const Color(0xFFEF5350);
+    if (t.contains('short')) return AppColors.dashboardTeal;
+    if (t.contains('casual')) return AppColors.dashboardBlue;
+    if (t.contains('sick')) return AppColors.error;
     if (t.contains('earned') || t.contains('annual'))
-      return const Color(0xFF66BB6A);
-    if (t.contains('optional')) return const Color(0xFFFFA726);
-    if (t.contains('auto')) return const Color(0xFFFFCA28);
-    if (t.contains('comp') || t.contains('off')) return const Color(0xFF26A69A);
-    if (t.contains('birthday')) return const Color(0xFF8E6BBF);
+      return AppColors.greenDark;
+    if (t.contains('optional')) return AppColors.dashboardOrange;
+    if (t.contains('auto')) return AppColors.spanishYellow;
+    if (t.contains('comp') || t.contains('off')) return AppColors.dashboardTeal;
+    if (t.contains('birthday')) return AppColors.dashboardPink;
     return AppColors.primary;
   }
 
@@ -967,8 +940,6 @@ class _LeaveScreenContentState extends State<_LeaveScreenContent>
         return 'Paid Leave';
       case LeaveType.eol:
         return 'Unpaid Leave';
-      default:
-        return 'Paid Leave';
     }
   }
 
@@ -1224,7 +1195,7 @@ class _LeaveScreenContentState extends State<_LeaveScreenContent>
     if (_isHR) tabs.add(const Tab(text: 'All Leaves'));
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: AppColors.bgWhite,
       appBar: _buildAppBar(tabs),
       body: BlocBuilder<LeaveBloc, LeaveState>(
         builder: (context, state) {
@@ -1246,12 +1217,18 @@ class _LeaveScreenContentState extends State<_LeaveScreenContent>
       floatingActionButton: Builder(
         builder: (context) {
           final bloc = context.read<LeaveBloc>();
-          return FloatingActionButton(
-            onPressed: () => _navigateToApplyLeave(context, bloc),
+          return AppShadowContainer(
+            borderRadius: 50,
             backgroundColor: AppColors.primary,
-            shape: const CircleBorder(),
-            elevation: 6,
-            child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
+            innerBottom: true,
+            innerLeft: true,
+            innerRight: true,
+            child: FloatingActionButton(
+              onPressed: () => _navigateToApplyLeave(context, bloc),
+              shape: const CircleBorder(),
+              elevation: 0,
+              child: const Icon(Icons.add_rounded, color: Colors.white, size: 40),
+            ),
           );
         },
       ),
@@ -1574,7 +1551,7 @@ class _LeaveScreenContentState extends State<_LeaveScreenContent>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     CustomText(
-                      '${request.type.label} • ${request.reason ?? 'No reason'}',
+                      '${request.type.label} • ${request.reason}',
                       isKey: false,
                       fontSize: 11,
                       color: Colors.grey.shade700,

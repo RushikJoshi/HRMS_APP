@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:hrms_ess/widgets/app_inner_shadow.dart';
+import 'package:hrms_ess/widgets/AppShadowContainer.dart';
 import 'package:sizer/sizer.dart';
 import '../utils/app_colors.dart';
 import 'border_container_wraper.dart';
@@ -37,22 +37,18 @@ class ProfileInfoCard extends StatelessWidget {
         child: Column(
           children: [
             // Top Banner - Flush with top and sides
-            AppInnerShadow(
-              top: true,
-              left: true,
-              right: true,
-              bottom: true,
+            AppShadowContainer(
+            innerBottom: true,
               borderRadius: 0,
+              topLeftRadius: 8,
+              topRightRadius: 8,
+
+              backgroundColor: AppColors.primary,
+              innerBlur: 3,
               child: Container(
                 width: double.infinity,
                 padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 2.w),
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(8),
-                    topRight: Radius.circular(9),
-                  ),
-                ),
+
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

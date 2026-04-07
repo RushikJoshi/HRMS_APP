@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:hrms_ess/widgets/AppShadowContainer.dart';
 import 'package:sizer/sizer.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shimmer/shimmer.dart';
 import '../utils/app_colors.dart';
-import '../utils/app_icons.dart';
 import '../bloc/my_team/my_team_bloc.dart';
 import '../bloc/my_team/my_team_event.dart';
 import '../bloc/my_team/my_team_state.dart';
+import '../widgets/custom_text.dart';
+
+const Color _primaryColor = Color(0xFF32DBE6);
+const Color _borderColor = Color(0xFFE1E8EF);
+const Color _backgroundColor = Color(0xFFFAFBFC);
 
 class MyTeamScreen extends StatelessWidget {
   const MyTeamScreen({super.key});
@@ -19,112 +25,64 @@ class MyTeamScreen extends StatelessWidget {
   }
 }
 
-class _MyTeamScreenContent extends StatelessWidget {
+class _MyTeamScreenContent extends StatefulWidget {
   const _MyTeamScreenContent();
 
-  void _showFilterDialog(BuildContext context) {
-    final bloc = context.read<MyTeamBloc>();
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return BlocBuilder<MyTeamBloc, MyTeamState>(
-          builder: (context, state) {
-            return Container(
-              padding: EdgeInsets.all(5.w),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Filter by Status',
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  _buildFilterOption(context, bloc, 'All', state.selectedFilter),
-                  _buildFilterOption(context, bloc, 'Present', state.selectedFilter),
-                  _buildFilterOption(context, bloc, 'On Leave', state.selectedFilter),
-                  _buildFilterOption(context, bloc, 'Late', state.selectedFilter),
-                  _buildFilterOption(context, bloc, 'Work from Home', state.selectedFilter),
-                  SizedBox(height: 2.5.w),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
+  @override
+  State<_MyTeamScreenContent> createState() => _MyTeamScreenContentState();
+}
+
+class _MyTeamScreenContentState extends State<_MyTeamScreenContent> {
+  late TextEditingController _searchController;
+  String _selectedBranch = 'Junagadh';
+  String _selectedDepartment = 'All Departments';
+  String? _selectedEmployeeId; // Track selected employee
+
+  final List<String> _branches = ['Junagadh', 'Ahmedabad'];
+  final List<String> _departments = [
+    'All Departments',
+    'QA Technical',
+    'Development',
+    'Human Resources',
+    'Managerial',
+    'Web Designer',
+    'President of Sales',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
   }
 
-  Widget _buildFilterOption(BuildContext context, MyTeamBloc bloc, String status, String selectedFilter) {
-    final isSelected = selectedFilter == status;
-    return ListTile(
-      title: Text(status),
-      leading: Radio<String>(
-        value: status,
-        groupValue: selectedFilter,
-        onChanged: (value) {
-          bloc.add(MyTeamFilterChanged(value!));
-          Navigator.pop(context);
-        },
-      ),
-      onTap: () {
-        bloc.add(MyTeamFilterChanged(status));
-        Navigator.pop(context);
-      },
-    );
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('My Team'),
-        backgroundColor: Colors.white,
-        foregroundColor: AppColors.textPrimary,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(AppIcons.filter),
-            onPressed: () => _showFilterDialog(context),
-          ),
-        ],
-      ),
+      backgroundColor: _backgroundColor,
+      appBar: _buildAppBar(context),
       body: BlocBuilder<MyTeamBloc, MyTeamState>(
         builder: (context, state) {
-          return Scrollbar(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: Container(
-                  width: 250.w, // Ensure ample width for table, forcing scroll on mobile
-                  padding: EdgeInsets.all(4.w),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                       Container(
-                         decoration: BoxDecoration(
-                           border: Border.all(color: Colors.grey.shade200),
-                           borderRadius: BorderRadius.circular(12),
-                         ),
-                         child: Column(
-                           children: [
-                             _buildTableHeader(),
-                             ...state.filteredMembers.map((member) => _buildTableRow(member)),
-                           ],
-                         ),
-                       ),
-                    ],
-                  ),
-                ),
-              ),
+          return SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              children: [
+                // Header Section
+                _buildHeaderSection(context),
+                // Search Bar
+                _buildSearchBar(),
+                // Filter Section
+                _buildFilterSection(context),
+                // Team Grid
+                SizedBox(height: 2.w),
+                _buildTeamGrid(state),
+                SizedBox(height: 4.w),
+              ],
             ),
           );
         },
@@ -132,142 +90,772 @@ class _MyTeamScreenContent extends StatelessWidget {
     );
   }
 
-  Widget _buildTableHeader() {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 3.w, horizontal: 4.w),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-        border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
+    return AppBar(
+      backgroundColor: _backgroundColor,
+      elevation: 0,
+      leading: Container(
+        margin: EdgeInsets.all(2.w),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _borderColor),
+        ),
+        child: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black, size: 16.sp),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
+      title: const CustomText(
+        'My Team',
+        isKey: false,
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+        color: AppColors.textPrimary2,
+      ),
+      centerTitle: true,
+    );
+  }
+
+  Widget _buildHeaderSection(BuildContext context) {
+    return Container(
+      color: Colors.white,
+      padding: EdgeInsets.fromLTRB(4.w, 3.w, 4.w, 2.w),
       child: Row(
         children: [
-          _buildHeaderCell('# ID', width: 25.w),
-          _buildHeaderCell('Name', width: 60.w, icon: Icons.person_outline),
-          _buildHeaderCell('Role', width: 50.w, icon: Icons.work_outline),
-          _buildHeaderCell('Department', width: 60.w, icon: Icons.apartment),
-          _buildHeaderCell('Status', width: 35.w, icon: Icons.show_chart),
+          Icon(Icons.location_on_outlined, size: 5.w, color: _primaryColor),
+          SizedBox(width: 2.w),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CustomText(
+                'Branch',
+                isKey: false,
+                fontSize: 10,
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w500,
+              ),
+              CustomText(
+                _selectedBranch,
+                isKey: false,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
+            ],
+          ),
+          const Spacer(),
+          Icon(Icons.people_outline, size: 5.w, color: AppColors.textGrey200),
         ],
       ),
     );
   }
 
-  Widget _buildTableRow(TeamMember member) {
+  Widget _buildSearchBar() {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 3.w, horizontal: 4.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Colors.grey.shade100)),
+      color: Colors.white,
+      padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.5.w),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Color(0xFFF5F7FA),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _borderColor),
+        ),
+        child: TextField(
+          controller: _searchController,
+          onChanged: (_) {
+            setState(() {});
+          },
+          decoration: InputDecoration(
+            hintText: 'Search',
+            hintStyle: TextStyle(fontSize: 13.sp, color: Colors.grey.shade500),
+            prefixIcon: Icon(
+              Icons.search,
+              size: 5.w,
+              color: Colors.grey.shade500,
+            ),
+            border: InputBorder.none,
+            contentPadding: EdgeInsets.symmetric(vertical: 2.w),
+          ),
+          style: TextStyle(fontSize: 13.sp, color: AppColors.textPrimary),
+        ),
       ),
+    );
+  }
+
+  Widget _buildFilterSection(BuildContext context) {
+    return Container(
+      color: Colors.white,
+      padding: EdgeInsets.fromLTRB(4.w, 2.w, 4.w, 2.w),
       child: Row(
         children: [
-          SizedBox(
-            width: 25.w,
-            child: Text(
-              '#${member.id}',
-              style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.bold, color: Colors.grey.shade800),
+          Expanded(
+            child: _buildFilterDropdown(
+              label: _selectedBranch,
+              onTap: () => _showFilterBottomSheet(context, 'Branch', _branches),
             ),
           ),
-          SizedBox(
-            width: 60.w,
-            child: Row(
+          SizedBox(width: 3.w),
+          Expanded(
+            child: _buildFilterDropdown(
+              label: _selectedDepartment,
+              onTap: () =>
+                  _showFilterBottomSheet(context, 'Department', _departments),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterDropdown({
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 2.w),
+        decoration: BoxDecoration(
+          color: Color(0xFFF5F7FA),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _borderColor),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11.sp,
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            SizedBox(width: 1.w),
+            Icon(
+              Icons.expand_more,
+              size: 4.5.w,
+              color: AppColors.textSecondary,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTeamGrid(MyTeamState state) {
+    // Show loading state with shimmer
+    if (state.allMembers.isEmpty && state.filteredMembers.isEmpty) {
+      return _buildShimmerGrid();
+    }
+
+    final filteredMembers = state.filteredMembers
+        .where(
+          (member) =>
+              _searchController.text.isEmpty ||
+              member.name.toLowerCase().contains(
+                _searchController.text.toLowerCase(),
+              ),
+        )
+        .toList();
+
+    if (filteredMembers.isEmpty) {
+      return _buildEmptyState();
+    }
+
+    return AppShadowContainer(
+      innerTop: true,
+      innerLeft: true,
+      innerBottom: true,
+      innerRight: true,
+      innerColor: AppColors.red,
+      innerBlur: 3,
+
+
+      child: Container(
+        color: Colors.white,
+        padding: EdgeInsets.fromLTRB(4.w, 1.w, 4.w, 2.w),
+        child: GridView.builder(
+          shrinkWrap: true,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            childAspectRatio: 1.05,
+            crossAxisSpacing: 2.5.w,
+            mainAxisSpacing: 2.3.w,
+          ),
+          itemCount: filteredMembers.length,
+          itemBuilder: (context, index) => _buildEmployeeCard(
+            filteredMembers[index],
+            isSelected: _selectedEmployeeId == filteredMembers[index].id,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShimmerGrid() {
+    return Container(
+      color: Colors.white,
+      padding: EdgeInsets.fromLTRB(2.w, 1.w, 2.w, 2.w),
+      child: GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          childAspectRatio: 1.05,
+          crossAxisSpacing: 2.5.w,
+          mainAxisSpacing: 2.5.w,
+        ),
+        itemCount: 6,
+        itemBuilder: (context, index) => Shimmer.fromColors(
+          baseColor: Colors.grey.shade200,
+          highlightColor: Colors.grey.shade100,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: _borderColor),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                 CircleAvatar(
-                    radius: 12,
-                    backgroundColor: member.color.withOpacity(0.2),
-                    child: Text(member.avatar, style: TextStyle(fontSize: 10.sp, color: member.color, fontWeight: FontWeight.bold)),
-                 ),
-                 SizedBox(width: 3.w),
-                 Text(
-                   member.name,
-                   style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w600, color: Colors.black87),
-                 ),
+                Container(
+                  width: 22.sp * 2,
+                  height: 22.sp * 2,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                SizedBox(height: 2.w),
+                Container(
+                  width: 50.w,
+                  height: 8.sp,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+                SizedBox(height: 1.w),
+                Container(
+                  width: 40.w,
+                  height: 7.sp,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
               ],
             ),
           ),
-          SizedBox(
-            width: 50.w,
-            child: Text(
-              member.designation,
-              style: TextStyle(fontSize: 11.sp, color: Colors.black87, fontWeight: FontWeight.w500),
-            ),
-          ),
-          SizedBox(
-            width: 60.w,
-            child: Text(
-              member.department,
-              style: TextStyle(fontSize: 11.sp, color: Colors.black87),
-            ),
-          ),
-          SizedBox(
-            width: 35.w,
-            child: _buildStatusBadge(member.status),
-          ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildHeaderCell(String text, {required double width, IconData? icon}) {
-    return SizedBox(
-      width: width,
-      child: Row(
-        children: [
-          if (icon != null) ...[Icon(icon, size: 14.sp, color: Colors.grey.shade600), SizedBox(width: 1.5.w)],
-          Text(
-            text,
-            style: TextStyle(
-              fontSize: 11.sp,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey.shade700,
-            ),
-          ),
-          Icon(Icons.unfold_more, size: 12.sp, color: Colors.grey.shade400)
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatusBadge(String status) {
-    Color color;
-    Color textColor = Colors.white;
-    switch (status.toLowerCase()) {
-      case 'active':
-        color = const Color(0xFF8BC34A); // Greenish
-        break;
-      case 'invited':
-        color = const Color(0xFF1F2937); // Dark
-        break;
-      case 'inactive':
-        color = Colors.grey.shade400; // Grey
-        break;
-      default:
-        color = Colors.blue;
-    }
-
-    return Row(
-      children: [
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.w),
+  Widget _buildEmployeeCard(TeamMember member, {required bool isSelected}) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedEmployeeId = isSelected ? null : member.id;
+        });
+        _showEmployeeDetails(member);
+      },
+      child: AnimatedScale(
+        scale: isSelected ? 0.98 : 1.0,
+        duration: const Duration(milliseconds: 150),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
           decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(20),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isSelected ? _primaryColor : _borderColor,
+              width: isSelected ? 2.0 : 1.0,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: isSelected
+                    ? _primaryColor.withOpacity(0.15)
+                    : Colors.black.withOpacity(0.02),
+                blurRadius: isSelected ? 12 : 8,
+                offset: Offset(0, isSelected ? 4 : 2),
+              ),
+            ],
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-               if (status.toLowerCase() == 'active' || status.toLowerCase() == 'invited') 
-                  Icon(status.toLowerCase() == 'invited' ? Icons.check : Icons.circle, 
-                       size: 8, color: Colors.white),
-               SizedBox(width: 1.w),
-               Text(
-                status,
-                style: TextStyle(color: textColor, fontSize: 10.sp, fontWeight: FontWeight.bold),
+              // Profile Image with Status Indicator
+              Stack(
+                children: [
+                  CircleAvatar(
+                    radius: 22.sp,
+                    backgroundColor: member.color.withOpacity(0.12),
+                    child: Text(
+                      member.avatar,
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        color: member.color,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  // Status Indicator Dot
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      width: 8.sp,
+                      height: 8.sp,
+                      decoration: BoxDecoration(
+                        color: member.checkIn == '-'
+                            ? Colors.grey
+                            : Colors.green.shade400,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 1.5),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 3,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 2.w),
+              // Employee Name
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 1.w),
+                child: Text(
+                  member.name,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ),
+              SizedBox(height: 0.5.w),
+              // Employee Role
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 1.w),
+                child: Text(
+                  member.designation,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 8.5.sp,
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
             ],
           ),
         ),
-      ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Container(
+      color: Colors.white,
+      padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 4.w),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 18.w,
+            height: 18.w,
+            decoration: BoxDecoration(
+              color: Color(0xFFF5F7FA),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.group_outlined,
+              size: 10.w,
+              color: Colors.grey.shade400,
+            ),
+          ),
+          SizedBox(height: 3.w),
+          CustomText(
+            'No employees found',
+            isKey: false,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+          ),
+          SizedBox(height: 1.5.w),
+          CustomText(
+            'Try adjusting your search or filters',
+            isKey: false,
+            fontSize: 12,
+            color: AppColors.textSecondary,
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showFilterBottomSheet(
+    BuildContext context,
+    String filterType,
+    List<String> options,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => _buildFilterBottomSheet(
+        filterType,
+        options,
+        filterType == 'Branch' ? _selectedBranch : _selectedDepartment,
+      ),
+    );
+  }
+
+  Widget _buildFilterBottomSheet(
+    String filterType,
+    List<String> options,
+    String selectedValue,
+  ) {
+    String tempSelected = selectedValue;
+
+    return StatefulBuilder(
+      builder: (context, setState) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.5,
+        maxChildSize: 0.9,
+        builder: (context, scrollController) => Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24),
+            ),
+          ),
+          child: Column(
+            children: [
+              // Header
+              Padding(
+                padding: EdgeInsets.all(4.w),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    CustomText(
+                      'Select $filterType',
+                      isKey: false,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Icon(
+                        Icons.close,
+                        size: 6.w,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Search in Filter
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.w),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Color(0xFFF5F7FA),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: _borderColor),
+                  ),
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Search $filterType',
+                      hintStyle: TextStyle(
+                        fontSize: 12.sp,
+                        color: Colors.grey.shade500,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.search,
+                        size: 5.w,
+                        color: Colors.grey.shade500,
+                      ),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(vertical: 1.8.w),
+                    ),
+                  ),
+                ),
+              ),
+              // Options List
+              Expanded(
+                child: ListView.builder(
+                  controller: scrollController,
+                  padding: EdgeInsets.all(4.w),
+                  itemCount: options.length,
+                  itemBuilder: (context, index) {
+                    final option = options[index];
+                    final isSelected = tempSelected == option;
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: 2.w),
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            tempSelected = option;
+                          });
+                        },
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 3.w,
+                            vertical: 2.5.w,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? _primaryColor.withOpacity(0.1)
+                                : Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isSelected ? _primaryColor : _borderColor,
+                              width: isSelected ? 2 : 1,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              CustomText(
+                                option,
+                                isKey: false,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: isSelected
+                                    ? _primaryColor
+                                    : AppColors.textPrimary,
+                              ),
+                              if (isSelected)
+                                Icon(
+                                  Icons.check_circle,
+                                  size: 5.w,
+                                  color: _primaryColor,
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              // Submit Button
+              Padding(
+                padding: EdgeInsets.all(4.w),
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      if (filterType == 'Branch') {
+                        _selectedBranch = tempSelected;
+                      } else {
+                        _selectedDepartment = tempSelected;
+                      }
+                    });
+                    Navigator.pop(context);
+                    this.setState(() {});
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.symmetric(vertical: 2.8.w),
+                    decoration: BoxDecoration(
+                      color: _primaryColor,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: _primaryColor.withOpacity(0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: CustomText(
+                        'SUBMIT',
+                        isKey: false,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showEmployeeDetails(TeamMember member) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => _buildEmployeeDetailSheet(member),
+    );
+  }
+
+  Widget _buildEmployeeDetailSheet(TeamMember member) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
+        ),
+      ),
+      padding: EdgeInsets.all(4.w),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Drag Handle
+            Center(
+              child: Container(
+                width: 12.w,
+                height: 0.6.w,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+            ),
+            SizedBox(height: 3.w),
+            // Profile Section
+            CircleAvatar(
+              radius: 35.sp,
+              backgroundColor: member.color.withOpacity(0.12),
+              child: Text(
+                member.avatar,
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  color: member.color,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            SizedBox(height: 2.5.w),
+            CustomText(
+              member.name,
+              isKey: false,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
+            SizedBox(height: 0.5.w),
+            CustomText(
+              member.designation,
+              isKey: false,
+              fontSize: 13,
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w500,
+            ),
+            SizedBox(height: 4.w),
+            // Divider
+            Divider(color: _borderColor, height: 0),
+            SizedBox(height: 3.w),
+            // Details Grid
+            _buildDetailTile(
+              Icons.badge_outlined,
+              'Employee ID',
+              '#${member.id}',
+            ),
+            SizedBox(height: 2.w),
+            _buildDetailTile(
+              Icons.work_outline,
+              'Department',
+              member.department,
+            ),
+            SizedBox(height: 2.w),
+            _buildDetailTile(
+              Icons.check_circle_outline,
+              'Status',
+              member.status,
+              color: member.status == 'Active'
+                  ? AppColors.greenDark
+                  : Colors.grey.shade600,
+            ),
+            SizedBox(height: 2.w),
+            if (member.checkIn != '-')
+              _buildDetailTile(
+                Icons.access_time_rounded,
+                'Check-in Time',
+                member.checkIn,
+              ),
+            SizedBox(height: 4.w),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailTile(
+    IconData icon,
+    String label,
+    String value, {
+    Color? color,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 2.5.w),
+      decoration: BoxDecoration(
+        color: Color(0xFFFAFBFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _borderColor),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: EdgeInsets.all(2.w),
+            decoration: BoxDecoration(
+              color: (color ?? _primaryColor).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, size: 4.5.w, color: color ?? _primaryColor),
+          ),
+          SizedBox(width: 3.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CustomText(
+                  label,
+                  isKey: false,
+                  fontSize: 10,
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w500,
+                ),
+                SizedBox(height: 0.5.w),
+                CustomText(
+                  value,
+                  isKey: false,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: color ?? AppColors.textPrimary,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

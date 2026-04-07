@@ -243,7 +243,7 @@ class _DelegationScreenContent extends StatelessWidget {
               'Delegating authority allows the selected employee to approve leave requests on your behalf during the specified period.',
               isKey: false,
               fontSize: 11,
-              color: Color(0xFF4A148C), // purple.shade900
+              color: AppColors.dashboardPink, // purple.shade900
             ),
           ),
         ],
@@ -251,3 +251,4 @@ class _DelegationScreenContent extends StatelessWidget {
     );
   }
 }
+

@@ -30,7 +30,7 @@ class ProfileScreen extends StatelessWidget {
     return BlocProvider(
       create: (context) => ProfileBloc()..add(const ProfileLoadRequested()),
       child: Scaffold(
-        backgroundColor: const Color(0xFFF9FBFF),
+        backgroundColor:  AppColors.backgroundPrimary,
         appBar: _buildAppBar(context),
         body: BlocBuilder<ProfileBloc, ProfileState>(
           builder: (context, state) {
@@ -235,3 +235,4 @@ class ProfileScreen extends StatelessWidget {
     Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
   }
 }
+

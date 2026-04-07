@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer/sizer.dart';
@@ -8,14 +6,23 @@ import '../api/api.dart';
 import '../models/api/attendance/attendance_log.dart';
 import '../models/api/holiday_response.dart';
 import '../models/api/leave/leave_dto.dart';
+import '../utils/app_colors.dart';
 import '../widgets/attendance_calendar.dart';
+import '../widgets/custom_text.dart';
 
-const Color _primaryColor = Color(0xFF32DBE6);
-const Color _backgroundColor = Colors.white;
-const Color _surfaceColor = Color(0xFFF8FBFD);
-const Color _textPrimary = Colors.black;
-const Color _textSecondary = Color(0xFF6B7280);
-const Color _borderColor = Color(0xFFE6EDF3);
+const Color _primaryColor = AppColors.dashboardTeal;
+const Color _backgroundColor = AppColors.bgWhite;
+const Color _surfaceColor = AppColors.lightTeal;
+const Color _textPrimary = AppColors.textPrimary;
+const Color _textSecondary = AppColors.textSecondary;
+const Color _borderColor = AppColors.textGrey200;
+
+const Color _presentColor = AppColors.greenDark;
+const Color _absentColor = AppColors.error;
+const Color _leaveColor = AppColors.spanishYellow;
+const Color _halfDayColor = AppColors.dashboardOrange;
+const Color _holidayColor = AppColors.dashboardPink;
+const Color _weekOffColor = AppColors.gray;
 
 class TimesheetScreen extends StatefulWidget {
   const TimesheetScreen({super.key});
@@ -96,7 +103,11 @@ class _TimesheetScreenState extends State<TimesheetScreen> {
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
     setState(() {
-      _selectedDay = DateTime(selectedDay.year, selectedDay.month, selectedDay.day);
+      _selectedDay = DateTime(
+        selectedDay.year,
+        selectedDay.month,
+        selectedDay.day,
+      );
       _focusedMonth = DateTime(focusedDay.year, focusedDay.month);
     });
     _showDayDetails(selectedDay);
@@ -107,26 +118,44 @@ class _TimesheetScreenState extends State<TimesheetScreen> {
     return Scaffold(
       backgroundColor: _backgroundColor,
       appBar: AppBar(
-        backgroundColor: _backgroundColor,
-        elevation: 0,
-        centerTitle: true,
-        scrolledUnderElevation: 0,
-        leading: _buildAppBarButton(
-          icon: Icons.arrow_back_ios_new_rounded,
-          onTap: () => Navigator.pop(context),
-        ),
-        title: Text(
+        title: const CustomText(
           'Timesheet',
-          style: TextStyle(
-            color: _textPrimary,
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w700,
+          isKey: false,
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: AppColors.textPrimary2,
+        ),
+        centerTitle: true,
+        backgroundColor: AppColors.surfacePrimary,
+        elevation: 0,
+        leading: Container(
+          margin: EdgeInsets.all(2.w),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade200),
+          ),
+          child: IconButton(
+            icon: Icon(Icons.arrow_back, color: Colors.black, size: 16.sp),
+            onPressed: () => Navigator.pop(context),
           ),
         ),
         actions: [
-          _buildAppBarButton(
-            icon: Icons.refresh_rounded,
-            onTap: _fetchData,
+          Container(
+            margin: EdgeInsets.all(2.w),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: IconButton(
+              icon: Icon(
+                Icons.refresh_rounded,
+                color: Colors.black,
+                size: 16.sp,
+              ),
+              onPressed: _fetchData,
+            ),
           ),
         ],
       ),
@@ -143,10 +172,7 @@ class _TimesheetScreenState extends State<TimesheetScreen> {
 
     if (_errorMessage != null) {
       return Center(
-        child: Padding(
-          padding: EdgeInsets.all(6.w),
-          child: _buildErrorCard(),
-        ),
+        child: Padding(padding: EdgeInsets.all(6.w), child: _buildErrorCard()),
       );
     }
 
@@ -161,8 +187,6 @@ class _TimesheetScreenState extends State<TimesheetScreen> {
           _buildSummaryGrid(),
           SizedBox(height: 4.w),
           _buildAttendancePercentageCard(),
-          SizedBox(height: 4.w),
-          _buildWeeklyChartCard(),
           SizedBox(height: 4.w),
           _buildDetailedStatsCard(),
         ],
@@ -185,11 +209,7 @@ class _TimesheetScreenState extends State<TimesheetScreen> {
         SizedBox(height: 1.w),
         Text(
           'Tap a date to view punch details and status.',
-          style: TextStyle(
-            fontSize: 10.sp,
-            color: _textSecondary,
-            height: 1.3,
-          ),
+          style: TextStyle(fontSize: 10.sp, color: _textSecondary, height: 1.3),
         ),
         SizedBox(height: 3.w),
         AttendanceCalendar(
@@ -204,57 +224,7 @@ class _TimesheetScreenState extends State<TimesheetScreen> {
           holidayDays: _holidayDays,
           weekOffDays: _weekOffDays,
         ),
-        SizedBox(height: 3.w),
-        _buildMiniLegend(),
       ],
-    );
-  }
-
-  Widget _buildMiniLegend() {
-    return Wrap(
-      spacing: 2.5.w,
-      runSpacing: 2.w,
-      children: [
-        _legendChip('Present', const Color(0xFF32DBE6)),
-        _legendChip('Absent', const Color(0xFFE53935)),
-        _legendChip('Leave', const Color(0xFFF4C542)),
-        _legendChip('Half Day', const Color(0xFFFFA726)),
-        _legendChip('Holiday', const Color(0xFF7E57C2)),
-        _legendChip('Week Off', const Color(0xFF9AA5B1)),
-      ],
-    );
-  }
-
-  Widget _legendChip(String label, Color color) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 2.5.w, vertical: 1.1.w),
-      decoration: BoxDecoration(
-        color: _surfaceColor,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: _borderColor),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 2.4.w,
-            height: 2.4.w,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-            ),
-          ),
-          SizedBox(width: 1.5.w),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 8.8.sp,
-              color: _textSecondary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -265,7 +235,7 @@ class _TimesheetScreenState extends State<TimesheetScreen> {
       physics: const NeverScrollableScrollPhysics(),
       crossAxisSpacing: 3.w,
       mainAxisSpacing: 3.w,
-      childAspectRatio: 1.55,
+      childAspectRatio: 1.42,
       children: [
         _summaryCard(
           title: 'Total Working Hours',
@@ -274,22 +244,22 @@ class _TimesheetScreenState extends State<TimesheetScreen> {
           accentColor: _primaryColor,
         ),
         _summaryCard(
-          title: 'Today Working Hours',
+          title: 'Current Working Hours',
           value: _formatHours(_workingHoursForDate(DateTime.now())),
           icon: Icons.today_rounded,
-          accentColor: const Color(0xFF2F80ED),
+          accentColor: AppColors.dashboardBlue,
         ),
         _summaryCard(
           title: 'Total Present Days',
           value: _presentDays.length.toString(),
           icon: Icons.check_circle_outline_rounded,
-          accentColor: const Color(0xFF4A90E2),
+          accentColor: _presentColor,
         ),
         _summaryCard(
           title: 'Total Absent Days',
           value: _absentDays.length.toString(),
           icon: Icons.cancel_outlined,
-          accentColor: const Color(0xFFE53935),
+          accentColor: _absentColor,
         ),
       ],
     );
@@ -358,11 +328,15 @@ class _TimesheetScreenState extends State<TimesheetScreen> {
   }
 
   Widget _buildAttendancePercentageCard() {
-    final workingDays = _presentDays.length + _absentDays.length + _leaveDays.length + _halfDays.length;
+    final workingDays =
+        _presentDays.length +
+        _absentDays.length +
+        _leaveDays.length +
+        _halfDays.length;
     final percentage = workingDays == 0
         ? 0.0
         : ((_presentDays.length + (_halfDays.length * 0.5)) / workingDays)
-            .clamp(0.0, 1.0);
+              .clamp(0.0, 1.0);
 
     return Container(
       width: double.infinity,
@@ -383,29 +357,30 @@ class _TimesheetScreenState extends State<TimesheetScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Attendance Percentage',
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w700,
-                      color: _textPrimary,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Attendance Percentage',
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w700,
+                        color: _textPrimary,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 0.8.w),
-                  Text(
-                    'Monthly attendance overview',
-                    style: TextStyle(
-                      fontSize: 9.6.sp,
-                      color: _textSecondary,
+                    SizedBox(height: 0.8.w),
+                    Text(
+                      'Monthly attendance overview',
+                      style: TextStyle(fontSize: 9.6.sp, color: _textSecondary),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              SizedBox(width: 2.w),
               Text(
                 '${(percentage * 100).toStringAsFixed(0)}%',
                 style: TextStyle(
@@ -422,117 +397,14 @@ class _TimesheetScreenState extends State<TimesheetScreen> {
             child: LinearProgressIndicator(
               value: percentage,
               minHeight: 1.2.h,
-              backgroundColor: const Color(0xFFEAF1F5),
+              backgroundColor: AppColors.lightTeal,
               valueColor: const AlwaysStoppedAnimation<Color>(_primaryColor),
             ),
           ),
           SizedBox(height: 2.2.w),
           Text(
             '$workingDays tracked working days',
-            style: TextStyle(
-              fontSize: 9.6.sp,
-              color: _textSecondary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWeeklyChartCard() {
-    final weekData = _buildWeeklyHoursData();
-    final maxHours = math.max(
-      1.0,
-      weekData.fold<double>(0.0, (maxValue, item) => math.max(maxValue, item.hours)),
-    );
-
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: _backgroundColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _borderColor),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      padding: EdgeInsets.all(4.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Weekly Working Hours',
-            style: TextStyle(
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w700,
-              color: _textPrimary,
-            ),
-          ),
-          SizedBox(height: 0.8.w),
-          Text(
-            'Work hours for the week around the selected date.',
             style: TextStyle(fontSize: 9.6.sp, color: _textSecondary),
-          ),
-          SizedBox(height: 4.w),
-          SizedBox(
-            height: 22.h,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: weekData.map((entry) {
-                final barHeight = (entry.hours / maxHours) * 12.h;
-                final safeHeight = math.max(1.2.h, barHeight);
-
-                return Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text(
-                        entry.hours == 0 ? '--' : _formatHours(entry.hours),
-                        style: TextStyle(
-                          fontSize: 8.8.sp,
-                          color: _textSecondary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      SizedBox(height: 1.2.h),
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        width: 7.w,
-                        height: safeHeight,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(999),
-                          gradient: const LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [Color(0xFF8DECF2), _primaryColor],
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: _primaryColor.withOpacity(0.18),
-                              blurRadius: 12,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 1.2.h),
-                      Text(
-                        entry.label,
-                        style: TextStyle(
-                          fontSize: 9.sp,
-                          color: _textPrimary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
-            ),
           ),
         ],
       ),
@@ -541,14 +413,14 @@ class _TimesheetScreenState extends State<TimesheetScreen> {
 
   Widget _buildDetailedStatsCard() {
     final stats = <_StatRowData>[
-      _StatRowData('Present Days', _presentDays.length, _primaryColor),
-      _StatRowData('Absent Days', _absentDays.length, const Color(0xFFE53935)),
-      _StatRowData('Leave Days', _leaveDays.length, const Color(0xFFF4C542)),
-      _StatRowData('Half Days', _halfDays.length, const Color(0xFFFFA726)),
-      _StatRowData('Holidays', _holidayDays.length, const Color(0xFF7E57C2)),
-      _StatRowData('Week Off', _weekOffDays.length, const Color(0xFF9AA5B1)),
-      _StatRowData('Late In Count', _lateInCount, const Color(0xFF2F80ED)),
-      _StatRowData('Early Out Count', _earlyOutCount, const Color(0xFF8D6E63)),
+      _StatRowData('Present Days', _presentDays.length, _presentColor),
+      _StatRowData('Absent Days', _absentDays.length, _absentColor),
+      _StatRowData('Leave Days', _leaveDays.length, _leaveColor),
+      _StatRowData('Half Days', _halfDays.length, _halfDayColor),
+      _StatRowData('Holidays', _holidayDays.length, _holidayColor),
+      _StatRowData('Week Off', _weekOffDays.length, _weekOffColor),
+      _StatRowData('Late In Count', _lateInCount, AppColors.dashboardBlue),
+      _StatRowData('Early Out Count', _earlyOutCount, AppColors.textColorGray),
     ];
 
     return Container(
@@ -646,11 +518,7 @@ class _TimesheetScreenState extends State<TimesheetScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.error_outline_rounded,
-            size: 12.w,
-            color: const Color(0xFFE53935),
-          ),
+          Icon(Icons.error_outline_rounded, size: 12.w, color: _absentColor),
           SizedBox(height: 3.w),
           Text(
             _errorMessage ?? 'Something went wrong.',
@@ -689,34 +557,16 @@ class _TimesheetScreenState extends State<TimesheetScreen> {
     );
   }
 
-  Widget _buildAppBarButton({required IconData icon, required VoidCallback onTap}) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 2.5.w),
-      child: Material(
-        color: _surfaceColor,
-        borderRadius: BorderRadius.circular(14),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: onTap,
-          child: Container(
-            width: 10.w,
-            height: 10.w,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: _borderColor),
-            ),
-            child: Icon(icon, color: _textPrimary, size: 4.5.w),
-          ),
-        ),
-      ),
-    );
-  }
-
   void _showDayDetails(DateTime day) {
     final attendance = _attendanceForDay(day);
     final leave = _leaveForDay(day);
     final holiday = _holidayForDay(day);
-    final status = _dayStatusLabel(day, attendance: attendance, leave: leave, holiday: holiday);
+    final status = _dayStatusLabel(
+      day,
+      attendance: attendance,
+      leave: leave,
+      holiday: holiday,
+    );
     final statusColor = _statusColor(status);
 
     showModalBottomSheet<void>(
@@ -726,7 +576,9 @@ class _TimesheetScreenState extends State<TimesheetScreen> {
       builder: (context) {
         return SafeArea(
           child: Container(
-            constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.72),
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.72,
+            ),
             decoration: const BoxDecoration(
               color: _backgroundColor,
               borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -769,11 +621,19 @@ class _TimesheetScreenState extends State<TimesheetScreen> {
                                 fontSize: 10.sp,
                                 color: _textSecondary,
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),
                       ),
-                      _statusChip(status, statusColor),
+                      SizedBox(width: 3.w),
+                      Flexible(
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: _statusChip(status, statusColor),
+                        ),
+                      ),
                     ],
                   ),
                   SizedBox(height: 3.h),
@@ -791,7 +651,9 @@ class _TimesheetScreenState extends State<TimesheetScreen> {
                   SizedBox(height: 1.8.h),
                   _detailRow(
                     label: 'Total Working Hours',
-                    value: _formatHours(_hoursFromText(attendance?.workingHours)),
+                    value: _formatHours(
+                      _hoursFromText(attendance?.workingHours),
+                    ),
                     icon: Icons.timelapse_rounded,
                   ),
                   SizedBox(height: 1.8.h),
@@ -816,7 +678,9 @@ class _TimesheetScreenState extends State<TimesheetScreen> {
                       icon: Icons.celebration_rounded,
                     ),
                   ],
-                  if (attendance == null && leave == null && holiday == null) ...[
+                  if (attendance == null &&
+                      leave == null &&
+                      holiday == null) ...[
                     SizedBox(height: 2.h),
                     Container(
                       width: double.infinity,
@@ -900,6 +764,7 @@ class _TimesheetScreenState extends State<TimesheetScreen> {
 
   Widget _statusChip(String label, Color color) {
     return Container(
+      constraints: BoxConstraints(maxWidth: 34.w),
       padding: EdgeInsets.symmetric(horizontal: 3.5.w, vertical: 1.2.h),
       decoration: BoxDecoration(
         color: color.withOpacity(0.12),
@@ -912,31 +777,26 @@ class _TimesheetScreenState extends State<TimesheetScreen> {
           color: color,
           fontWeight: FontWeight.w700,
         ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
     );
   }
 
-  List<_WeeklyHoursData> _buildWeeklyHoursData() {
-    final referenceDate = _selectedDay;
-    final weekStart = referenceDate.subtract(Duration(days: referenceDate.weekday - 1));
-
-    return List.generate(7, (index) {
-      final day = weekStart.add(Duration(days: index));
-      return _WeeklyHoursData(
-        label: DateFormat('EEE').format(day),
-        hours: _workingHoursForDate(day),
-      );
-    });
-  }
-
   double _sumWorkingHours(List<AttendanceLog> records) {
-    return records.fold<double>(0.0, (sum, record) => sum + _hoursFromText(record.workingHours));
+    return records.fold<double>(
+      0.0,
+      (sum, record) => sum + _hoursFromText(record.workingHours),
+    );
   }
 
   double _workingHoursForDate(DateTime day) {
     return _attendanceRecords
         .where((record) => _isSameDate(_recordDate(record), day))
-        .fold<double>(0.0, (sum, record) => sum + _hoursFromText(record.workingHours));
+        .fold<double>(
+          0.0,
+          (sum, record) => sum + _hoursFromText(record.workingHours),
+        );
   }
 
   double _hoursFromText(String? value) {
@@ -973,7 +833,8 @@ class _TimesheetScreenState extends State<TimesheetScreen> {
         continue;
       }
       final normalizedDay = _dateOnly(day);
-      if (!normalizedDay.isBefore(_dateOnly(start)) && !normalizedDay.isAfter(_dateOnly(end))) {
+      if (!normalizedDay.isBefore(_dateOnly(start)) &&
+          !normalizedDay.isAfter(_dateOnly(end))) {
         return leave;
       }
     }
@@ -1012,7 +873,8 @@ class _TimesheetScreenState extends State<TimesheetScreen> {
     if (attendanceStatus.contains('absent')) {
       return 'Absent';
     }
-    if (attendanceStatus.contains('late') && attendanceStatus.contains('early')) {
+    if (attendanceStatus.contains('late') &&
+        attendanceStatus.contains('early')) {
       return 'Late In / Early Out';
     }
     if (attendanceStatus.contains('late')) {
@@ -1029,14 +891,14 @@ class _TimesheetScreenState extends State<TimesheetScreen> {
 
   Color _statusColor(String status) {
     final normalized = status.toLowerCase();
-    if (normalized.contains('absent')) return const Color(0xFFE53935);
-    if (normalized.contains('leave')) return const Color(0xFFF4C542);
-    if (normalized.contains('half')) return const Color(0xFFFFA726);
-    if (normalized.contains('holiday')) return const Color(0xFF7E57C2);
-    if (normalized.contains('week off')) return const Color(0xFF9AA5B1);
-    if (normalized.contains('late')) return const Color(0xFF2F80ED);
-    if (normalized.contains('early')) return const Color(0xFF8D6E63);
-    if (normalized.contains('present')) return _primaryColor;
+    if (normalized.contains('absent')) return _absentColor;
+    if (normalized.contains('leave')) return _leaveColor;
+    if (normalized.contains('half')) return _halfDayColor;
+    if (normalized.contains('holiday')) return _holidayColor;
+    if (normalized.contains('week off')) return _weekOffColor;
+    if (normalized.contains('late')) return AppColors.dashboardBlue;
+    if (normalized.contains('early')) return AppColors.textColorGray;
+    if (normalized.contains('present')) return _presentColor;
     return _textSecondary;
   }
 
@@ -1084,7 +946,8 @@ class _TimesheetScreenState extends State<TimesheetScreen> {
       var current = _dateOnly(start);
       final last = _dateOnly(end);
       while (!current.isAfter(last)) {
-        if (current.year == _focusedMonth.year && current.month == _focusedMonth.month) {
+        if (current.year == _focusedMonth.year &&
+            current.month == _focusedMonth.month) {
           days.add(current);
         }
         current = current.add(const Duration(days: 1));
@@ -1095,8 +958,11 @@ class _TimesheetScreenState extends State<TimesheetScreen> {
 
   List<DateTime> get _holidayDays {
     return _holidays
-        .where((holiday) =>
-            holiday.date.year == _focusedMonth.year && holiday.date.month == _focusedMonth.month)
+        .where(
+          (holiday) =>
+              holiday.date.year == _focusedMonth.year &&
+              holiday.date.month == _focusedMonth.month,
+        )
         .map((holiday) => _dateOnly(holiday.date))
         .toSet()
         .toList();
@@ -1104,7 +970,11 @@ class _TimesheetScreenState extends State<TimesheetScreen> {
 
   List<DateTime> get _weekOffDays {
     final days = <DateTime>[];
-    final daysInMonth = DateTime(_focusedMonth.year, _focusedMonth.month + 1, 0).day;
+    final daysInMonth = DateTime(
+      _focusedMonth.year,
+      _focusedMonth.month + 1,
+      0,
+    ).day;
     for (var day = 1; day <= daysInMonth; day++) {
       final current = DateTime(_focusedMonth.year, _focusedMonth.month, day);
       if (_isWeekend(current)) {
@@ -1115,11 +985,15 @@ class _TimesheetScreenState extends State<TimesheetScreen> {
   }
 
   int get _lateInCount {
-    return _attendanceRecords.where((record) => _isLateInStatus(record.status)).length;
+    return _attendanceRecords
+        .where((record) => _isLateInStatus(record.status))
+        .length;
   }
 
   int get _earlyOutCount {
-    return _attendanceRecords.where((record) => _isEarlyOutStatus(record.status)).length;
+    return _attendanceRecords
+        .where((record) => _isEarlyOutStatus(record.status))
+        .length;
   }
 
   bool _isApprovedLeave(LeaveDto leave) {
@@ -1128,7 +1002,9 @@ class _TimesheetScreenState extends State<TimesheetScreen> {
 
   bool _isPresentStatus(String? status) {
     final normalized = (status ?? '').toLowerCase();
-    return normalized.contains('present') || normalized.contains('late') || normalized.contains('early');
+    return normalized.contains('present') ||
+        normalized.contains('late') ||
+        normalized.contains('early');
   }
 
   bool _isAbsentStatus(String? status) {
@@ -1148,11 +1024,13 @@ class _TimesheetScreenState extends State<TimesheetScreen> {
   }
 
   bool _isWeekend(DateTime date) {
-    return date.weekday == DateTime.saturday || date.weekday == DateTime.sunday;
+    return date.weekday == DateTime.saturday;
   }
 
   DateTime? _recordDate(AttendanceLog record) {
-    return _parseDate(record.date) ?? _parseDate(record.inTime) ?? _parseDate(record.outTime);
+    return _parseDate(record.date) ??
+        _parseDate(record.inTime) ??
+        _parseDate(record.outTime);
   }
 
   DateTime _dateOnly(DateTime date) {
@@ -1177,7 +1055,9 @@ class _TimesheetScreenState extends State<TimesheetScreen> {
     }
     final left = _dateOnly(first);
     final right = _dateOnly(second);
-    return left.year == right.year && left.month == right.month && left.day == right.day;
+    return left.year == right.year &&
+        left.month == right.month &&
+        left.day == right.day;
   }
 
   String _timeLabel(String? value) {
@@ -1190,13 +1070,6 @@ class _TimesheetScreenState extends State<TimesheetScreen> {
     }
     return value.trim();
   }
-}
-
-class _WeeklyHoursData {
-  final String label;
-  final double hours;
-
-  _WeeklyHoursData({required this.label, required this.hours});
 }
 
 class _StatRowData {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:hrms_ess/widgets/AppShadowContainer.dart';
 import 'package:sizer/sizer.dart';
 import '../utils/app_colors.dart';
-import 'app_inner_shadow.dart';
 import 'border_container_wraper.dart';
 import 'custom_text.dart';
 
@@ -230,14 +230,9 @@ class UpcomingCelebrationCard extends StatelessWidget {
             Row(
               children: [
                 // Inner Shadow Profile with directional logic
-                AppInnerShadow(
-                  height: 14.w,
-                  width: 14.w,
-                  borderRadius: 50,
-                  top: true,
-                  left: true,
-                  right: true,
-                  bottom: false,
+                AppShadowContainer(
+                  height: 10.h,
+                  width: 22.w,
                   child: Padding(
                     padding: EdgeInsets.all(0.5.w),
                     child: ClipOval(

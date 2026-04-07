@@ -34,7 +34,7 @@ class AttendanceCalendar extends StatefulWidget {
 }
 
 class _AttendanceCalendarState extends State<AttendanceCalendar> {
-  static const Color _presentColor = Color(0xFF32DBE6);
+  static const Color _presentColor = Color(0xFF22C55E);
   static const Color _absentColor = Color(0xFFE53935);
   static const Color _leaveColor = Color(0xFFF4C542);
   static const Color _halfDayColor = Color(0xFFFFA726);
@@ -54,64 +54,94 @@ class _AttendanceCalendarState extends State<AttendanceCalendar> {
     Widget buildCell({
       Color? color,
       required Color textColor,
-      Color borderColor = Colors.transparent,
-      bool filled = true,
-    }) =>
-        Container(
-          margin: EdgeInsets.all(1.w),
-          decoration: BoxDecoration(
-            color: filled ? color : Colors.white,
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: selected ? _accentColor : borderColor,
-              width: selected ? 1.6 : 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(filled ? 0.08 : 0.04),
-                blurRadius: 4,
-                offset: const Offset(0, 1),
-              ),
-            ],
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            '${day.day}',
-            style: TextStyle(
-              color: textColor,
-              fontWeight: FontWeight.w500,
-              fontSize: 10.5.sp,
-            ),
-          ),
-        );
+      Color borderColor = const Color(0xFFE1E8EF),
+      bool isSelected = false,
+      bool isTodayCell = false,
+    }) => Container(
+      margin: EdgeInsets.all(0.6.w),
+      decoration: BoxDecoration(
+        color: color ?? Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isSelected || isTodayCell ? _accentColor : borderColor,
+          width: isSelected ? 1.5 : 1,
+        ),
+        boxShadow: isSelected
+            ? [
+                BoxShadow(
+                  color: _accentColor.withOpacity(0.18),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : null,
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        '${day.day}',
+        style: TextStyle(
+          color: textColor,
+          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+          fontSize: 10.sp,
+        ),
+      ),
+    );
 
     // Priority-based styling
     if (_isDayInList(day, widget.absentDays)) {
-      return buildCell(color: _absentColor, textColor: Colors.white);
+      return buildCell(
+        color: _absentColor,
+        textColor: Colors.white,
+        isSelected: selected,
+      );
     }
     if (_isDayInList(day, widget.leaveDays)) {
-      return buildCell(color: _leaveColor, textColor: Colors.black87);
+      return buildCell(
+        color: _leaveColor,
+        textColor: Colors.black87,
+        isSelected: selected,
+      );
     }
     if (_isDayInList(day, widget.halfDays)) {
-      return buildCell(color: _halfDayColor, textColor: Colors.white);
+      return buildCell(
+        color: _halfDayColor,
+        textColor: Colors.white,
+        isSelected: selected,
+      );
     }
     if (_isDayInList(day, widget.holidayDays)) {
-      return buildCell(color: _holidayColor, textColor: Colors.white);
+      return buildCell(
+        color: _holidayColor,
+        textColor: Colors.white,
+        isSelected: selected,
+      );
     }
     if (_isDayInList(day, widget.presentDays)) {
-      return buildCell(color: _presentColor, textColor: Colors.white);
+      return buildCell(
+        color: _presentColor,
+        textColor: Colors.white,
+        isSelected: selected,
+      );
     }
     if (_isDayInList(day, widget.weekOffDays)) {
-      return buildCell(color: _weekOffColor, textColor: Colors.white);
+      return buildCell(
+        color: _weekOffColor,
+        textColor: Colors.white,
+        isSelected: selected,
+      );
     }
 
-    // Weekends
+    // Week off default styling (Saturday only)
     if (day.weekday == DateTime.saturday || day.weekday == DateTime.sunday) {
       return buildCell(
-        color: null,
-        textColor: Colors.black87,
-        borderColor: Colors.grey.shade300,
-        filled: false,
+        color: day.weekday == DateTime.saturday
+            ? _weekOffColor
+            : const Color(0xFFF8FBFD),
+        textColor: day.weekday == DateTime.saturday
+            ? Colors.white
+            : const Color(0xFF6B7280),
+        borderColor: const Color(0xFFE1E8EF),
+        isSelected: selected,
       );
     }
 
@@ -119,30 +149,16 @@ class _AttendanceCalendarState extends State<AttendanceCalendar> {
       return buildCell(
         color: const Color(0xFFEAFBFD),
         textColor: _accentColor,
-        borderColor: _accentColor.withOpacity(0.6),
-        filled: true,
+        isSelected: selected,
+        isTodayCell: true,
       );
     }
 
-    return Container(
-      margin: EdgeInsets.all(1.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: selected ? _accentColor : Colors.grey.shade300,
-          width: selected ? 1.6 : 1,
-        ),
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        '${day.day}',
-        style: TextStyle(
-          color: Colors.black87,
-          fontWeight: FontWeight.w500,
-          fontSize: 11.sp,
-        ),
-      ),
+    return buildCell(
+      color: Colors.white,
+      textColor: Colors.black87,
+      borderColor: const Color(0xFFE1E8EF),
+      isSelected: selected,
     );
   }
 
@@ -154,8 +170,8 @@ class _AttendanceCalendarState extends State<AttendanceCalendar> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
+            color: Colors.black.withOpacity(0.035),
+            blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
@@ -186,20 +202,18 @@ class _AttendanceCalendarState extends State<AttendanceCalendar> {
               weekdayStyle: TextStyle(
                 color: Colors.black87,
                 fontWeight: FontWeight.w600,
-                fontSize: 10.sp,
+                fontSize: 9.8.sp,
               ),
               weekendStyle: TextStyle(
                 color: Colors.grey.shade600,
                 fontWeight: FontWeight.w600,
-                fontSize: 10.sp,
+                fontSize: 9.8.sp,
               ),
             ),
             calendarStyle: const CalendarStyle(
               outsideDaysVisible: false,
-              selectedDecoration: BoxDecoration(
-                color: Color(0xFF1976D2),
-                shape: BoxShape.circle,
-              ),
+              cellMargin: EdgeInsets.all(4),
+              cellPadding: EdgeInsets.zero,
             ),
             headerVisible: false,
             calendarBuilders: CalendarBuilders(
@@ -212,11 +226,49 @@ class _AttendanceCalendarState extends State<AttendanceCalendar> {
               },
             ),
           ),
-          SizedBox(height: 3.w),
-          // Legend
+          SizedBox(height: 2.2.w),
           _buildLegend(),
+          SizedBox(height: 0.8.w),
         ],
       ),
+    );
+  }
+
+  Widget _buildLegend() {
+    return Wrap(
+      spacing: 2.2.w,
+      runSpacing: 1.7.w,
+      alignment: WrapAlignment.start,
+      children: [
+        _buildLegendItem('Present', _presentColor),
+        _buildLegendItem('Absent', _absentColor),
+        _buildLegendItem('Leave', _leaveColor),
+        _buildLegendItem('Half Day', _halfDayColor),
+        _buildLegendItem('Holiday', _holidayColor),
+        _buildLegendItem('Week Off', _weekOffColor),
+      ],
+    );
+  }
+
+  Widget _buildLegendItem(String label, Color color) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 2.6.w,
+          height: 2.6.w,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        SizedBox(width: 1.2.w),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 8.8.sp,
+            color: const Color(0xFF6B7280),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 
@@ -251,46 +303,6 @@ class _AttendanceCalendarState extends State<AttendanceCalendar> {
             );
             widget.onPageChanged?.call(newDate);
           },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLegend() {
-    return Wrap(
-      spacing: 3.w,
-      runSpacing: 2.w,
-      alignment: WrapAlignment.center,
-      children: [
-        _buildLegendItem('Present', _presentColor),
-        _buildLegendItem('Absent', _absentColor),
-        _buildLegendItem('Leave', _leaveColor),
-        _buildLegendItem('Half Day', _halfDayColor),
-        _buildLegendItem('Holiday', _holidayColor),
-        _buildLegendItem('Week Off', _weekOffColor),
-      ],
-    );
-  }
-
-  Widget _buildLegendItem(String label, Color color) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 3.w,
-          height: 3.w,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
-        ),
-        SizedBox(width: 1.w),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 8.sp,
-            color: Colors.grey.shade700,
-          ),
         ),
       ],
     );

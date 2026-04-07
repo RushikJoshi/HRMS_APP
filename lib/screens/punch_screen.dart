@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
+import '../utils/app_colors.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/attendance/attendance_bloc.dart';
 import '../bloc/attendance/attendance_event.dart';
@@ -27,17 +28,17 @@ class _PunchScreenState extends State<PunchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor:  AppColors.surfacePrimary,
       appBar: AppBar(
         title: const CustomText(
           'Punch In/Out',
           isKey: false,
           fontSize: 18,
           fontWeight: FontWeight.bold,
-          color: Color(0xFF333333),
+          color: AppColors.textPrimary2,
         ),
         centerTitle: true,
-        backgroundColor: const Color(0xFFF5F5F5),
+        backgroundColor:  AppColors.surfacePrimary,
         elevation: 0,
         leading: Container(
           margin: EdgeInsets.all(2.w),
@@ -175,7 +176,7 @@ class _PunchScreenState extends State<PunchScreen> {
             style: TextStyle(
               fontSize: 60.sp,
               fontWeight: FontWeight.w700,
-              color: const Color(0xFF1976D2),
+              color:  AppColors.loginPrimaryBlue,
               letterSpacing: 2,
             ),
           ),
@@ -185,7 +186,7 @@ class _PunchScreenState extends State<PunchScreen> {
             isKey: false,
             fontSize: 13,
             color: state.isPunchedIn
-                ? const Color(0xFF00C853)
+                ?  AppColors.greenDark
                 : Colors.grey.shade600,
             fontWeight: FontWeight.w600,
           ),
@@ -200,15 +201,15 @@ class _PunchScreenState extends State<PunchScreen> {
       child: Container(
         decoration: BoxDecoration(
           color: state.isPunchedIn
-              ? const Color(0xFFD32F2F)
-              : const Color(0xFF00C853),
+              ?  AppColors.red
+              :  AppColors.greenDark,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
               color:
                   (state.isPunchedIn
-                          ? const Color(0xFFD32F2F)
-                          : const Color(0xFF00C853))
+                          ?  AppColors.red
+                          :  AppColors.greenDark)
                       .withOpacity(0.3),
               blurRadius: 12,
               offset: const Offset(0, 4),
@@ -253,7 +254,7 @@ class _PunchScreenState extends State<PunchScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.check_circle, color: const Color(0xFF00C853), size: 18.sp),
+          Icon(Icons.check_circle, color:  AppColors.greenDark, size: 18.sp),
           SizedBox(width: 2.w),
           CustomText(
             'Punched in at $timeStr',
@@ -286,7 +287,7 @@ class _PunchScreenState extends State<PunchScreen> {
             ),
           ],
         ),
-        backgroundColor: const Color(0xFF00C853),
+        backgroundColor:  AppColors.greenDark,
         duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
         margin: EdgeInsets.all(4.w),
@@ -307,3 +308,4 @@ class _PunchScreenState extends State<PunchScreen> {
     }
   }
 }
+
